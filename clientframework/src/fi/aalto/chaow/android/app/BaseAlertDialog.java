@@ -32,9 +32,13 @@ public class BaseAlertDialog extends SherlockDialogFragment {
 
 	private AlertDialogListener mListener = null;
 
-	public BaseAlertDialog(AlertDialogListener listener){
-		mListener = listener;
+	public BaseAlertDialog(){
+		super();
 		setCancelable(true);
+	}
+
+	public void setAlertDialogListener(final AlertDialogListener listener){
+		mListener = listener;
 	}
 
 	protected AlertDialogListener getDialogListener(){
@@ -43,7 +47,9 @@ public class BaseAlertDialog extends SherlockDialogFragment {
 
 	@Override
 	public void onCancel(DialogInterface dialog) {
-		mListener.onCancel();
+		if(mListener != null){
+			mListener.onCancel();			
+		}
 	}
 
 	public interface AlertDialogListener {

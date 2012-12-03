@@ -27,6 +27,7 @@ package org.sizzlelab.contextlogger.android;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.sizzlelab.contextlogger.android.R;
 import org.sizzlelab.contextlogger.android.model.ActionEvent;
 import org.sizzlelab.contextlogger.android.model.EventInfo;
 import org.sizzlelab.contextlogger.android.model.EventState;

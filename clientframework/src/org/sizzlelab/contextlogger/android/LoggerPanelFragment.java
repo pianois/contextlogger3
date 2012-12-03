@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.json.JSONException;
+import org.sizzlelab.contextlogger.android.LoggerPanelFragment.ActivityNamingDialog.ActivityNamingListener;
 import org.sizzlelab.contextlogger.android.MainActivity.OnContextLoggerStatusChangeListener;
 import org.sizzlelab.contextlogger.android.io.MainPipeline;
 import org.sizzlelab.contextlogger.android.model.ActionEvent;
@@ -60,12 +61,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
+import com.WazaBe.HoloEverywhere.widget.AdapterView;
+import com.WazaBe.HoloEverywhere.widget.AdapterView.OnItemSelectedListener;
 import com.WazaBe.HoloEverywhere.widget.Button;
 import com.WazaBe.HoloEverywhere.widget.EditText;
 import com.WazaBe.HoloEverywhere.widget.Spinner;
@@ -82,7 +84,7 @@ import fi.aalto.chaow.android.utils.TextHelper;
 
 public class LoggerPanelFragment extends SherlockListFragment implements OnClickListener, Constants, OnContextLoggerStatusChangeListener,
 																				OnCheckedChangeListener, OnActivityEventUpdateListener,
-											com.WazaBe.HoloEverywhere.widget.AdapterView.OnItemSelectedListener {
+																				OnItemSelectedListener {
 	private Handler mHandler = new Handler();
 	private Runnable mTimedTask = new Runnable(){
 		@Override
@@ -391,22 +393,51 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 		}
 	}	
 	
+	private void saveEventTag(final String tagName){
+		ClientApp app = ClientApp.getInstance();
+		String tags = app.getEventTags();
+		if(TextUtils.isEmpty(tags)){
+			ArrayList<String> tagList = null;
+			try {
+				tagList = ClientApp.getInstance().getEventTagsFromAsset();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if(tagList != null){
+				mTagArray = tagList.toArray(new String[tagList.size()]);
+			}
+			if(mTagArray != null){
+				tags = new String(tagName + ";" + TextUtils.join(";", mTagArray));				
+			}
+		}else{
+			tags = new String(tagName + ";" + tags);
+		}
+		app.saveEventTag(tags);
+	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int itemId = item.getItemId();
 		if (itemId == R.id.menu_add_tag) {
-			new ActivityNamingDialog(new AlertDialogListener(){
+			ActivityNamingDialog and = new ActivityNamingDialog();
+			and.setAlertDialogListener(new AlertDialogListener(){
 				@Override
-				public void onPositiveClick() {
+				public void onPositiveClick() { }
+				@Override
+				public void onNegativeClick() { }
+				@Override
+				public void onCancel() { }
+			});
+			and.setActivityNamingListener(new ActivityNamingListener(){
+				@Override
+				public void OnTagNameInputCompleted(String tagName) {
+					saveEventTag(tagName);
 					refreshSpinner();
 				}
-				@Override
-				public void onNegativeClick() {
-				}
-				@Override
-				public void onCancel() {
-				}
-			}).show(getFragmentManager(), "AddingNewActivityName"); 
+			});
+			and.show(getFragmentManager(), "AddingNewActivityName"); 
 			return true;
 		} else if (itemId == R.id.menu_export_data) {
 			exportData();
@@ -417,7 +448,8 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 				return true;
 			}
 		} else if (itemId == R.id.menu_shutdown) {
-			new QuitAppDialog(new AlertDialogListener(){
+			QuitAppDialog aqd = new QuitAppDialog();
+			aqd.setAlertDialogListener(new AlertDialogListener(){
 				@Override
 				public void onPositiveClick() {
 					quitApp();
@@ -428,7 +460,8 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 				@Override
 				public void onCancel() {
 				}
-			}).show(getFragmentManager(), "QuitApp");
+			});
+			aqd.show(getFragmentManager(), "QuitApp");
 			return true;
 		}else if(itemId == R.id.menu_toggle_service){
 			if(mLoggerSwitch != null){
@@ -509,7 +542,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	}
 	
 	@Override
-	public void onItemSelected(com.WazaBe.HoloEverywhere.widget.AdapterView<?> parent,  View view, int pos, long id) {
+	public void onItemSelected(AdapterView<?> parent,  View view, int pos, long id) {
 		mCurrentTag = parent.getItemAtPosition(pos).toString();
 		boolean enable = true;
 		for(String tag : mEventTagList){
@@ -522,7 +555,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	}
 
 	@Override
-	public void onNothingSelected(com.WazaBe.HoloEverywhere.widget.AdapterView<?> parent) {
+	public void onNothingSelected(AdapterView<?> parent) {
 	}
 
 	@Override
@@ -569,12 +602,8 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 		}
 	}
 	
-	private class QuitAppDialog extends BaseAlertDialog{
+	public static class QuitAppDialog extends BaseAlertDialog{
 
-		public QuitAppDialog(AlertDialogListener listener) {
-			super(listener);
-		}
-		
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
@@ -599,10 +628,12 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 		}
 	}
 	
-	private class ActivityNamingDialog extends BaseAlertDialog{
-
-		public ActivityNamingDialog(AlertDialogListener listener) {
-			super(listener);
+	public static class ActivityNamingDialog extends BaseAlertDialog{
+		
+		private ActivityNamingListener mActivityNamingListener = null;
+		
+		public void setActivityNamingListener(ActivityNamingListener listener){
+			mActivityNamingListener = listener;
 		}
 		
 		@Override
@@ -621,11 +652,12 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 						public void onClick(DialogInterface dialog, int which) {
 							final String tagName = tagContent.getEditableText().toString();
 							if(!TextUtils.isEmpty(tagName)){
-								saveEventTag(tagName);
+								if(mActivityNamingListener != null){
+									mActivityNamingListener.OnTagNameInputCompleted(tagName);
+								}
 							}else{
 								ClientApp.getInstance().showToastMessage("Please give the input");
 							}
-							getDialogListener().onPositiveClick();
 						}
 					});
 	    	builder.setNegativeButton(R.string.cancel,     			
@@ -638,29 +670,10 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 			return builder.create();   
 		}
 		
-		private void saveEventTag(final String tagName){
-			ClientApp app = ClientApp.getInstance();
-			String tags = app.getEventTags();
-			if(TextUtils.isEmpty(tags)){
-				ArrayList<String> tagList = null;
-				try {
-					tagList = ClientApp.getInstance().getEventTagsFromAsset();
-				} catch (JSONException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				if(tagList != null){
-					mTagArray = tagList.toArray(new String[tagList.size()]);
-				}
-				if(mTagArray != null){
-					tags = new String(tagName + ";" + TextUtils.join(";", mTagArray));				
-				}
-			}else{
-				tags = new String(tagName + ";" + tags);
-			}
-			app.saveEventTag(tags);
+		public static interface ActivityNamingListener{
+			void OnTagNameInputCompleted(final String tagName);
 		}
+		
 	}
 
 }
