@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.sizzlelab.contextlogger.android.ClientApp;
+import org.sizzlelab.contextlogger.android.R;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 public class TravelApp extends ClientApp {
 
@@ -100,5 +104,18 @@ public class TravelApp extends ClientApp {
 		return list;
 	}
 	
+	
+	public synchronized void startFadeInAnimation(final View view){
+		if(view != null){
+			Animation anim = AnimationUtils.loadAnimation(this, R.anim.tween);
+			view.startAnimation(anim);
+		}
+	}
+	
+	public synchronized void clearAnimation(final View view){
+		if(view != null){
+			view.clearAnimation();
+		}
+	}
 	
 }

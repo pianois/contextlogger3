@@ -34,10 +34,16 @@
     <string name="travel_purpose">Purpose</string>  
     <string name="travel_destination">Destination</string>     
     <string name="travel_reason">Reason</string>     
+    <string name="travel_parking_place">Parking place</string> 
+    <string name="travel_parking_price">Price</string>  
+    <string name="travel_parking_price_value">%s &#8364;</string> 
+    <string name="travel_parking_payment_method">Payment method</string>  
     <string name="travel_mode_prompt">Please specify the transport mode</string>
     <string name="travel_destination_prompt">Please specify the destination</string>
     <string name="travel_reason_prompt">Please specify the reason</string>
     <string name="travel_purpose_prompt">Please specify the purpose</string>
+    <string name="travel_parking_place_prompt">Please specify the parking place</string>
+    <string name="travel_parking_payment_prompt">Please specify the paymrny method</string>
 
     <string name="travel_export">Export data to memory card</string>
 	<string name="travel_shutdown">Quit</string>
@@ -82,7 +88,8 @@
     <string name="travel_play_button_descr">button play</string>
 	<string name="travel_pause_button_descr">button pause</string>
 	<string name="travel_stop_button_descr">button stop</string>    
-    
+	<string name="travel_parking_button_descr">button parking</string>  
+	
     <string name="travel_start_logging">Start logging</string>
     <string name="travel_stop_logging">Stop logging</string>	
 	
@@ -106,4 +113,6 @@
 	<string name="client_error">Client error!</string> 
 	<string name="travel">travel</string>  	
 	
+	<string name="travel_parking_duration">Duration of the parking: </string>
+	<string name="travel_no_parking">No parking active yet</string>
 </resources>

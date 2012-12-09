@@ -27,15 +27,15 @@
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_enabled="false"
-    	android:drawable="@drawable/travel_play_pressed"
-    	/>
+    	android:drawable="@drawable/travel_parking_pressed"
+    	/>    
     <item android:state_pressed="true"
-    	android:drawable="@drawable/travel_play_pressed"
+    	android:drawable="@drawable/travel_parking_pressed"
     	/>
     <item android:state_focused="true"
-    	android:drawable="@drawable/travel_play_pressed"
+    	android:drawable="@drawable/travel_parking_pressed"
     	/>
     <item
-    	android:drawable="@drawable/travel_play_normal"
-    	/>		
+    	android:drawable="@drawable/travel_parking_normal"
+    	/>	
 </selector>

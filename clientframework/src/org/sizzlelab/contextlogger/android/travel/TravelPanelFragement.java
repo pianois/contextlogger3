@@ -114,9 +114,11 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	private ImageButton mButtonPlay = null;
 	private ImageButton mButtonPause = null;
 	private ImageButton mButtonStop = null;
+	private ImageButton mButtonParking = null;
 	
 	private View mViewNoTrip = null;
 	private View mViewTripContainer = null;
+	private View mViewParkingAnimation = null;
 	private TextView mTextViewDuration = null;
 	private TextView mTextViewStatus = null;
 	
@@ -131,6 +133,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	private TravelStatus mStatus = TravelStatus.IDLE;
 	
 	private String mCurrentMode = null;
+	private String mCurrentPersonNumber = null;
 	private String mCurrentReason = null;
 	private String mCurrentPurpose = null;
 	private String mCurrentDestination = null;
@@ -175,11 +178,15 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mButtonPause.setOnClickListener(this);
 		mButtonStop = (ImageButton)view.findViewById(R.id.image_button_travel_stop);
 		mButtonStop.setOnClickListener(this);
+		mButtonParking = (ImageButton)view.findViewById(R.id.image_button_travel_parking);
+		mButtonParking.setOnClickListener(this);
 		mViewNoTrip = view.findViewById(R.id.text_view_no_trip);
 		mViewTripContainer = view.findViewById(R.id.layout_trip_duration_container);
 		mTextViewDuration = (TextView)view.findViewById(R.id.text_view_travel_duration_value);
 		mLoggerSwitch = (Switch)getSherlockActivity().getSupportActionBar().getCustomView().findViewById(R.id.logger_switcher);
 		mTextViewStatus = (TextView)view.findViewById(R.id.text_view_travel_service_state);
+		mViewParkingAnimation = view.findViewById(R.id.view_travel_parking_animation);
+		mViewParkingAnimation.setOnClickListener(this);
 		return view;
 	}
 	
@@ -231,6 +238,11 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			// enable all the components
 			toggleUIComponent(true);
 			invalidateUIComponents();
+			if(mStatus == TravelStatus.PAUSE){
+				mButtonParking.setVisibility(View.VISIBLE);
+			}else{
+				mButtonParking.setVisibility(View.GONE);
+			}
 			if(mStatus == TravelStatus.MOVING){
 				mButtonPlay.setVisibility(View.GONE);
 				mButtonPause.setVisibility(View.VISIBLE);
@@ -255,6 +267,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			mCurrentDestination = null;
 			mViewNoTrip.setVisibility(View.VISIBLE);
 			mViewTripContainer.setVisibility(View.GONE);
+			mButtonParking.setVisibility(View.GONE);
 		}
 		refreshSpinners();		
 	}
@@ -507,7 +520,9 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					cs = CustomSubject.REASON;
 				}
 				mCurrentReason = itemName;
-			}		
+			}else if(viewId == R.id.spinner_travel_transport_mode_person_list){
+				mCurrentPersonNumber = itemName;
+			}
 			if(isShown){
 				CustomSubjectItemDialog csid = new CustomSubjectItemDialog();
 				csid.config(new CustomSubjectItemListener (){
@@ -556,22 +571,33 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	public void onClick(View view) {
 		if(view != null){
 			final int viewId = view.getId();
+			if(viewId == R.id.view_travel_parking_animation){
+				mListener.onFragmentChanged(R.layout.travel_parking_panel, null);
+				return;
+			}
+			if(viewId == R.id.image_button_travel_parking){
+				mListener.onFragmentChanged(R.layout.travel_parking_panel, null);
+				return;
+			}
 			if(viewId == R.id.image_button_travel_pause){
 				notifyTravelingEvent(TravelStatus.PAUSE);
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
+				mButtonParking.setVisibility(View.VISIBLE);
 			}else if(viewId == R.id.image_button_travel_play){
 				notifyTravelingEvent(TravelStatus.MOVING);
 				mViewNoTrip.setVisibility(View.GONE);
 				mViewTripContainer.setVisibility(View.VISIBLE);
 				mButtonPlay.setVisibility(View.GONE);
 				mButtonPause.setVisibility(View.VISIBLE);
+				mButtonParking.setVisibility(View.GONE);
 			}else if(viewId == R.id.image_button_travel_stop){
 				notifyTravelingEvent(TravelStatus.STOP);
 				mViewNoTrip.setVisibility(View.VISIBLE);
 				mViewTripContainer.setVisibility(View.GONE);
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
+				mButtonParking.setVisibility(View.GONE);
 			}			
 			mApp.saveTravelStauts(mStatus.ordinal());
 			invalidateUIComponents();
@@ -629,6 +655,10 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), ae);	
 					notifyEvent(ae.getMessagePayload());
 					mCurrentMode = null;
+				}
+				if(!TextUtils.isEmpty(mCurrentPersonNumber)){
+					handleNote("Person(s): " + mCurrentPersonNumber);
+					mCurrentPersonNumber = null;
 				}
 				// purpose
 				if(!TextUtils.isEmpty(mCurrentPurpose)){

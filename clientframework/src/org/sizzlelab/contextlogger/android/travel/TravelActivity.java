@@ -36,7 +36,6 @@ import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -112,23 +111,29 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 	public void onFragmentChanged(int layoutResId, Bundle args) {
 		FragmentTransaction transaction = getSupportFragmentTransaction();
 
-		ListFragment listFragment = null;
+		Fragment fragment = null;
 		
 		if(layoutResId == R.layout.logger_history){
-			listFragment = new LoggerHistoryFragment();
+			fragment = new LoggerHistoryFragment();
+		} else if(layoutResId == R.layout.travel_parking_panel){
+			fragment = new TravelParkingPanelFragement();
 		}
 		
-		if(listFragment != null){
+		if(fragment != null){
 			if(args != null){
-				listFragment.setArguments(args);
+				fragment.setArguments(args);
 			}
 
-			if(listFragment instanceof LoggerHistoryFragment){
-				transaction.replace(R.id.screen_container, listFragment, "loggerHistory"); 
+			if(fragment instanceof LoggerHistoryFragment){
+				transaction.replace(R.id.screen_container, fragment, "loggerHistory"); 
+				constructActionbar();
+			}else if (fragment instanceof TravelParkingPanelFragement){
+				transaction.replace(R.id.screen_container, fragment, "travelParkingPanel"); 
 				constructActionbar();
 			}
+			
 			// Add to this transaction into BackStack
-			transaction.addToBackStack(listFragment.getTag());
+			transaction.addToBackStack(fragment.getTag());
 			
 			transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			// Commit this transaction
@@ -144,13 +149,11 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 	}
 	
 	private void resetActionbar(){
-		Fragment f = getSupportFragmentManager().findFragmentByTag("loggerHistory");
-		if(f != null){
-			if(f.isAdded()){
-				 mActionBar.setHomeButtonEnabled(false);
-				 mActionBar.setDisplayHomeAsUpEnabled(false);
-				 mSwitcherView.setVisibility(View.VISIBLE);				
-			}
+		if((getSupportFragmentManager().findFragmentByTag("loggerHistory") != null)
+			||(getSupportFragmentManager().findFragmentByTag("travelParkingPanel") != null)){
+			 mActionBar.setHomeButtonEnabled(false);
+			 mActionBar.setDisplayHomeAsUpEnabled(false);
+			 mSwitcherView.setVisibility(View.VISIBLE);				
 		}
 	}
 	
