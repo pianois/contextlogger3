@@ -119,6 +119,11 @@ public class ActionEvent extends EventTimeUtil implements Parcelable{
 		}
 	}
 
+	public final String getDuration(boolean clockFormat){
+		if(clockFormat) return getEventDurationInClockFormat(getEventDuration());
+		else return getDuration();
+	}
+	
 	public final String getDuration(){
 		int days = 0;
 		int hours = 0;

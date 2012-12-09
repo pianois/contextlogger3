@@ -92,6 +92,7 @@
 	<string name="travel_save">Save</string>       
 	<string name="travel_mode_dialog">Mode</string>
 	<string name="travel_reason_dialog">Reason</string>
+	<string name="travel_persons">Person(s)</string> 
 	<string name="travel_destination_dialog">Destination</string>	
 	<string name="travel_purpose_dialog">Purpose</string>	
 			

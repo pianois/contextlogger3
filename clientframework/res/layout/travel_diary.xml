@@ -66,30 +66,6 @@
 		<TextView  
 		    android:layout_height="wrap_content" 
 		    android:layout_width="wrap_content"
-   	    	android:layout_marginTop="3dp"
-	    	android:layout_marginBottom="3dp"
-		    android:text="@string/travel_mode_of_transport" 
-   	    	android:layout_marginLeft="5dp"
-	    	android:layout_marginRight="5dp"
-			android:textSize="16sp"
-			/>        
-	    
-		<com.WazaBe.HoloEverywhere.widget.Spinner 
-			android:id="@+id/spinner_travel_transport_mode_list"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-	    	android:layout_marginTop="1dp"
-	    	android:layout_marginBottom="3dp"
-   	    	android:layout_marginLeft="5dp"
-	    	android:layout_marginRight="5dp"
-			android:minWidth="250dp"
-			android:maxWidth="400dp"
-			android:prompt="@string/travel_mode_prompt"
-			/>	    
-	    
-		<TextView  
-		    android:layout_height="wrap_content" 
-		    android:layout_width="wrap_content"
 		    android:text="@string/travel_purpose" 
    	    	android:layout_marginLeft="5dp"
 	    	android:layout_marginRight="5dp"
@@ -102,8 +78,8 @@
 			android:layout_height="wrap_content"
    	    	android:layout_marginLeft="5dp"
 	    	android:layout_marginRight="5dp"
-			android:minWidth="250dp"
-			android:maxWidth="400dp"
+			android:minWidth="230dp"
+			android:maxWidth="280dp"
 			android:prompt="@string/travel_purpose_prompt"
 			/>		    
 	    
@@ -122,11 +98,72 @@
 			android:layout_height="wrap_content"
    	    	android:layout_marginLeft="5dp"
 	    	android:layout_marginRight="5dp"
-			android:minWidth="250dp"
-			android:maxWidth="400dp"
+			android:minWidth="230dp"
+			android:maxWidth="280dp"
 			android:prompt="@string/travel_destination_prompt"
 			/>		    
 
+		
+		<LinearLayout 
+		    android:layout_height="wrap_content" 
+		    android:layout_width="match_parent"
+    		android:layout_marginTop="1dp"
+	    	android:layout_marginBottom="3dp"
+   	    	android:layout_marginLeft="5dp"
+	    	android:layout_marginRight="5dp"
+	    	android:orientation="horizontal" 
+	    	>
+		    
+		    <LinearLayout 
+			    android:layout_height="wrap_content" 
+	    		android:layout_width="wrap_content"
+		    	android:orientation="vertical" 
+		    	>
+				<TextView  
+				    android:layout_height="wrap_content" 
+				    android:layout_width="wrap_content"
+				    android:text="@string/travel_mode_of_transport" 
+					android:textSize="16sp"
+					/>  		        
+		        
+				<com.WazaBe.HoloEverywhere.widget.Spinner 
+					android:id="@+id/spinner_travel_transport_mode_list"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:minWidth="230dp"
+					android:maxWidth="280dp"
+					android:prompt="@string/travel_mode_prompt"
+					/>	    				    
+				
+		    </LinearLayout>
+		    
+		    
+		    <LinearLayout 
+			    android:layout_height="wrap_content" 
+	    		android:layout_width="wrap_content"
+		    	android:orientation="vertical"
+				android:layout_marginLeft="3dp"
+		        >
+		        
+				<TextView  
+				    android:layout_height="wrap_content" 
+				    android:layout_width="wrap_content"
+				    android:text="@string/travel_persons" 
+					android:textSize="16sp"
+					/>  		        		        
+		        
+				<com.WazaBe.HoloEverywhere.widget.Spinner 
+					android:id="@+id/spinner_travel_transport_mode_person_list"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:minWidth="60dp"
+					android:maxWidth="90dp"
+					android:prompt="@string/travel_mode_prompt"
+					/>					    		        
+		    </LinearLayout>		    
+
+		</LinearLayout>
+		
 		<TextView  
 		    android:layout_height="wrap_content" 
 		    android:layout_width="wrap_content"
@@ -142,8 +179,8 @@
 			android:layout_height="wrap_content"
    	    	android:layout_marginLeft="5dp"
 	    	android:layout_marginRight="5dp"
-			android:minWidth="250dp"
-			android:maxWidth="400dp"
+			android:minWidth="230dp"
+			android:maxWidth="280dp"
 			android:prompt="@string/travel_reason_prompt"
 			/>			
 		
@@ -171,17 +208,16 @@
 		    	android:layout_marginBottom="8dp"
 		    	android:layout_marginLeft="5dp"
 		    	android:layout_marginRight="5dp"
-		    	android:orientation="horizontal"
+		    	android:orientation="vertical"
 		    	android:visibility="gone"
 		        >
 		        
 				<TextView  
 				    android:layout_height="wrap_content" 
-				    android:layout_width="0dp"
+				    android:layout_width="wrap_content" 
 				    android:text="@string/travel_duration" 
 	   				android:gravity="center_vertical"
 					android:textSize="18sp"
-					android:layout_weight="1"
 					/> 		
 					
 				<TextView  
@@ -197,7 +233,7 @@
 		</FrameLayout>
 		
 	    <LinearLayout 
-			android:layout_width="match_parent"
+			android:layout_width="wrap_content"
 	    	android:layout_height="wrap_content"
 	    	android:layout_marginTop="8dp"
 	    	android:layout_marginBottom="20dp"
@@ -205,30 +241,41 @@
 	    	android:layout_marginRight="5dp"
 	    	android:orientation="horizontal"
 	        >
-
-  	       <ImageButton 
-	           android:id="@+id/image_button_travel_play"
-	           android:layout_height="wrap_content"
-	           android:layout_width="0dp"
-	           android:layout_weight="1"
-	           android:src="@drawable/travel_play_button_selector"
-	           android:contentDescription="@string/travel_play_button_descr"
-	           /> 
-	       
-	       <ImageButton 
-	           android:id="@+id/image_button_travel_pause"
-	           android:layout_height="wrap_content"
-	           android:layout_width="0dp"
-	           android:layout_weight="1"
-	           android:src="@drawable/travel_pause_button_selector"
-	           android:contentDescription="@string/travel_pause_button_descr"
-	           /> 
+  
+	        <FrameLayout 
+      			android:layout_width="wrap_content"
+	    		android:layout_height="wrap_content"
+	            >
+  	       
+	  	       <ImageButton 
+		           android:id="@+id/image_button_travel_play"
+		           android:layout_height="wrap_content"
+		           android:layout_width="wrap_content"
+		           android:minWidth="80dp"
+		           android:maxWidth="100dp"
+		           android:src="@drawable/travel_play_button_selector"
+		           android:contentDescription="@string/travel_play_button_descr"
+		           /> 
+		       
+		       <ImageButton 
+		           android:id="@+id/image_button_travel_pause"
+		           android:layout_height="wrap_content"
+		           android:layout_width="wrap_content"
+	   	           android:minWidth="80dp"
+		           android:maxWidth="100dp"
+		           android:src="@drawable/travel_pause_button_selector"
+		           android:contentDescription="@string/travel_pause_button_descr"
+		           android:visibility="gone"
+		           /> 	            
+	            
+	        </FrameLayout>
 	           
 	       <ImageButton 
 	           android:id="@+id/image_button_travel_stop"
 	           android:layout_height="wrap_content"
-	           android:layout_width="0dp"
-	           android:layout_weight="1"
+	           android:layout_width="wrap_content"
+   	           android:minWidth="80dp"
+	           android:maxWidth="100dp"
 	           android:src="@drawable/travel_stop_button_selector"
 	           android:contentDescription="@string/travel_stop_button_descr"
 	           /> 	           	        			

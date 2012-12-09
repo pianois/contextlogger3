@@ -54,4 +54,27 @@ abstract class EventTimeUtil {
 		return (currentDay == target.get(Calendar.DAY_OF_YEAR) 
 				&& (currentYear == target.get(Calendar.YEAR)));
 	}
+	
+	private static final int TIME_IN_ONE_DAY = 24 * 60 * 60 * 1000;
+	private static final int TIME_IN_ONE_HOUR = 60 * 60 * 1000;
+	private static final int TIME_IN_ONE_MIN = 60 * 1000;
+	
+	protected static String getEventDurationInClockFormat(long time){
+		int days = 0, hours = 0, mins = 0, secs = 0;
+		final long eventDuration = time;
+		days = (int)(eventDuration / TIME_IN_ONE_DAY);
+		hours = (int) ((eventDuration - days * TIME_IN_ONE_DAY) / TIME_IN_ONE_HOUR);
+		mins = (int) ((eventDuration - days * TIME_IN_ONE_DAY - hours * TIME_IN_ONE_HOUR) / TIME_IN_ONE_MIN);
+		secs = (int) ((eventDuration - days * TIME_IN_ONE_DAY - hours * TIME_IN_ONE_HOUR - mins * TIME_IN_ONE_MIN) / 1000 );
+		return new String(getStringTimeNumberValue(hours) + ":" + getStringTimeNumberValue(mins) + ":" + getStringTimeNumberValue(secs));
+	}
+	
+	private static String getStringTimeNumberValue(int num){
+		if(num < 10){
+			return new String("0" + String.valueOf(num));
+		}else{
+			return String.valueOf(num);
+		}
+	}
+	
 }

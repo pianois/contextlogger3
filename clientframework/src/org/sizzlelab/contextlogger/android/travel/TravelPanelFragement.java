@@ -78,10 +78,12 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			ArrayList<ActionEvent> travelList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
 			for(ActionEvent ae : travelList){
 				if(TravelApp.getInstance().getString(R.string.travel).equals(ae.getActionEventName())){
-					 mTextViewDuration.setText(ae.getDuration());
+					if(mTextViewDuration != null){
+						 mTextViewDuration.setText(ae.getDuration(true));						
+					}
 				}
 			}
-			mHandler.postDelayed(mTimedTask , 6000);				
+			mHandler.postDelayed(mTimedTask , 500);				
 		}
 	};
 	
@@ -104,6 +106,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	private boolean mIsRunning = false;
 	
 	private Spinner mSpinnerMode = null;
+	private Spinner mSpinnerModePerson = null;
 	private Spinner mSpinnerPurpose = null;
 	private Spinner mSpinnerDestination = null;
 	private Spinner mSpinnerReason = null;
@@ -158,6 +161,8 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		View view = inflater.inflate(R.layout.travel_diary, container, false); 
 		mSpinnerMode = (Spinner)view.findViewById(R.id.spinner_travel_transport_mode_list);
 		mSpinnerMode.setOnItemSelectedListener(this);
+		mSpinnerModePerson = (Spinner)view.findViewById(R.id.spinner_travel_transport_mode_person_list);
+		mSpinnerModePerson.setOnItemSelectedListener(this);
 		mSpinnerPurpose = (Spinner)view.findViewById(R.id.spinner_travel_purpose_list);
 		mSpinnerPurpose.setOnItemSelectedListener(this);
 		mSpinnerDestination = (Spinner)view.findViewById(R.id.spinner_travel_destination_list);
@@ -226,6 +231,13 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			// enable all the components
 			toggleUIComponent(true);
 			invalidateUIComponents();
+			if(mStatus == TravelStatus.MOVING){
+				mButtonPlay.setVisibility(View.GONE);
+				mButtonPause.setVisibility(View.VISIBLE);
+			}else if(mStatus == TravelStatus.PAUSE){
+				mButtonPlay.setVisibility(View.VISIBLE);
+				mButtonPause.setVisibility(View.GONE);
+			}
 			if((mStatus == TravelStatus.MOVING) || (mStatus == TravelStatus.PAUSE)){
 				mViewNoTrip.setVisibility(View.GONE);
 				mViewTripContainer.setVisibility(View.VISIBLE);
@@ -252,6 +264,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mButtonStop.setEnabled(enable);
 		mButtonPlay.setEnabled(enable);
 		mSpinnerMode.setEnabled(enable);
+		mSpinnerModePerson.setEnabled(enable);
 		mSpinnerDestination.setEnabled(enable);
 		mSpinnerPurpose.setEnabled(enable);
 		mSpinnerReason.setEnabled(enable);		
@@ -288,6 +301,13 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			mSpinnerMode.setSelection(0);
 		}
 		mSpinnerMode.invalidate();
+		
+		// hard-code for person
+		String[] arrayPerson = {"1", "2", "3", "4", "5", "6", "7", "8"};
+		ArrayList<String> listPerson = new ArrayList<String>(Arrays.asList(arrayPerson));
+		ArrayAdapter<String> dataAdapterPerson = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+				R.layout.spinner_item, listPerson);
+		mSpinnerModePerson.setAdapter(dataAdapterPerson);
 	}
 	
 	private void refershReasonSpinner(){
@@ -538,14 +558,20 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			final int viewId = view.getId();
 			if(viewId == R.id.image_button_travel_pause){
 				notifyTravelingEvent(TravelStatus.PAUSE);
+				mButtonPlay.setVisibility(View.VISIBLE);
+				mButtonPause.setVisibility(View.GONE);
 			}else if(viewId == R.id.image_button_travel_play){
 				notifyTravelingEvent(TravelStatus.MOVING);
 				mViewNoTrip.setVisibility(View.GONE);
 				mViewTripContainer.setVisibility(View.VISIBLE);
+				mButtonPlay.setVisibility(View.GONE);
+				mButtonPause.setVisibility(View.VISIBLE);
 			}else if(viewId == R.id.image_button_travel_stop){
 				notifyTravelingEvent(TravelStatus.STOP);
 				mViewNoTrip.setVisibility(View.VISIBLE);
 				mViewTripContainer.setVisibility(View.GONE);
+				mButtonPlay.setVisibility(View.VISIBLE);
+				mButtonPause.setVisibility(View.GONE);
 			}			
 			mApp.saveTravelStauts(mStatus.ordinal());
 			invalidateUIComponents();
