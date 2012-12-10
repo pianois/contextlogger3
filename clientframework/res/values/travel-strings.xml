@@ -82,6 +82,18 @@
         <item>Have a fun</item>
         <item>Add custom reason</item>
     </string-array>    
+
+    <string-array name="travel_parking_paymeny_method">
+        <item>Cash</item>
+        <item>Bank card</item>
+        <item>Others</item>
+    </string-array>    
+
+    <string-array name="travel_parking_place">
+        <item>Street</item>
+        <item>Garage</item>
+        <item>Others</item>
+    </string-array>    
     
     <string name="travel_duration">Duration of the trip: </string>
     <string name="travel_no_trip">No trip active yet</string>
@@ -112,7 +124,9 @@
 	<string name="ok">OK</string> 
 	<string name="client_error">Client error!</string> 
 	<string name="travel">travel</string>  	
+	<string name="travel_parking">parking</string>  	
 	
+	<string name="travel_parking_free_charge">free charge</string>
 	<string name="travel_parking_duration">Duration of the parking: </string>
 	<string name="travel_no_parking">No parking active yet</string>
 </resources>

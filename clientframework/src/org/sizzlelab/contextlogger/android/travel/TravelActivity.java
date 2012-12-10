@@ -117,6 +117,10 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 			fragment = new LoggerHistoryFragment();
 		} else if(layoutResId == R.layout.travel_parking_panel){
 			fragment = new TravelParkingPanelFragement();
+		} else if(layoutResId == R.layout.travel_diary){
+			resetActionbar();
+			getSupportFragmentManager().popBackStack();
+			return;
 		}
 		
 		if(fragment != null){

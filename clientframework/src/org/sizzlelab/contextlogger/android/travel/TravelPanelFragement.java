@@ -27,6 +27,7 @@ package org.sizzlelab.contextlogger.android.travel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.sizzlelab.contextlogger.android.R;
 import org.sizzlelab.contextlogger.android.io.MainPipeline;
@@ -195,6 +196,25 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		super.onResume();
 		refreshUI();
 		mHandler.post(mTimedTask);
+		toggleParkingLogoAnimation();
+	}
+	
+	private void toggleParkingLogoAnimation(){
+		ActionEvent parkingEvent = null;
+		ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+		for(ActionEvent ae : parkingList){
+			if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
+				parkingEvent = ae;
+				break;
+			}
+		}
+		if(parkingEvent == null){
+			mViewParkingAnimation.setVisibility(View.GONE);
+			mApp.clearAnimation(mViewParkingAnimation);
+		}else{
+			mApp.startFadeInAnimation(mViewParkingAnimation);
+			mViewParkingAnimation.setVisibility(View.VISIBLE);
+		}
 	}
 	
 	@Override
@@ -283,7 +303,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mSpinnerReason.setEnabled(enable);		
 	}
 	
-	private void refershModeSpinner(){
+	private void refreshModeSpinner(){
 		// mode
 		String[] arrayMode = getResources().getStringArray(R.array.travel_mode_array);
 		ArrayList<String> listMode = new ArrayList<String>(Arrays.asList(arrayMode)); 
@@ -323,7 +343,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mSpinnerModePerson.setAdapter(dataAdapterPerson);
 	}
 	
-	private void refershReasonSpinner(){
+	private void refreshReasonSpinner(){
 		// reason
 		String[] arrayReason = getResources().getStringArray(R.array.travel_reason_array);
 		ArrayList<String> listReason = new ArrayList<String>(Arrays.asList(arrayReason));
@@ -356,7 +376,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mSpinnerReason.invalidate();
 	}
 	
-	private void refershDestinationSpinner(){
+	private void refreshDestinationSpinner(){
 		// destination
 		String[] arrayDestination = getResources().getStringArray(R.array.travel_destination_array);
 		ArrayList<String> listDestination = new ArrayList<String>(Arrays.asList(arrayDestination));
@@ -389,7 +409,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mSpinnerDestination.invalidate();
 	}
 	
-	private void refershPurposeSpinner(){
+	private void refreshPurposeSpinner(){
 		// purpose
 		String[] arrayPurpose = getResources().getStringArray(R.array.travel_purpose_array);
 		ArrayList<String> listPurpose = new ArrayList<String>(Arrays.asList(arrayPurpose));		
@@ -423,10 +443,10 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	}
 	
 	private void refreshSpinners(){
-		refershModeSpinner();
-		refershPurposeSpinner();
-		refershDestinationSpinner();
-		refershReasonSpinner();
+		refreshModeSpinner();
+		refreshPurposeSpinner();
+		refreshDestinationSpinner();
+		refreshReasonSpinner();
 	}
 	
 	private void handleCustomeSubjectItem(final String itemName, final CustomSubject subject){	
@@ -442,7 +462,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					mApp.saveTravelMode(strMode);
 				}
 				mCurrentMode = itemName;
-				refershModeSpinner();
+				refreshModeSpinner();
 				break;
 			case PURPOSE:
 				mNewTravelPurpose = itemName;
@@ -455,7 +475,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					mApp.saveTravelPurpose(strPurpose);
 				}
 				mCurrentPurpose = itemName;
-				refershPurposeSpinner();
+				refreshPurposeSpinner();
 				break;
 			case REASON:
 				mNewTravelReason = itemName;
@@ -468,7 +488,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					mApp.saveTravelReason(strReason);
 				}
 				mCurrentReason = itemName;
-				refershReasonSpinner();
+				refreshReasonSpinner();
 				break;
 			case DESTINATION:
 				mNewTravelDestination = itemName;
@@ -481,7 +501,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					mApp.saveTravelMode(strDes);
 				}
 				mCurrentDestination = itemName;
-				refershDestinationSpinner();
+				refreshDestinationSpinner();
 				break;					
 			default:
 				return;
@@ -626,10 +646,13 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				// mode
 				ArrayList<ActionEvent> stopList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
 				for(ActionEvent ae : stopList){
-					ae.confirmBreakTimestamp();
-					ae.setState(EventState.STOP);
-					ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
-					notifyEvent(ae.getMessagePayload());
+					// parking event will not stop here
+					if(!getString(R.string.travel_parking).equals(ae.getActionEventName())){
+						ae.confirmBreakTimestamp();
+						ae.setState(EventState.STOP);
+						ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
+						notifyEvent(ae.getMessagePayload(), null);						
+					}
 				} 
 				mStatus = TravelStatus.IDLE;
 				mTextViewDuration.setText("");
@@ -642,7 +665,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 						ae.confirmBreakTimestamp();
 						ae.setState(EventState.STOP);
 						ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
-						notifyEvent(ae.getMessagePayload());
+						notifyEvent(ae.getMessagePayload(), null);
 					}
 				} 					
 				mStatus = TravelStatus.PAUSE;
@@ -653,55 +676,61 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					ActionEvent ae = new ActionEvent(mCurrentMode, System.currentTimeMillis());
 					ae.setState(EventState.START);
 					ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), ae);	
-					notifyEvent(ae.getMessagePayload());
+
 					mCurrentMode = null;
+					
+					HashMap<String, String> userMsg = new HashMap<String,String>();
+					
+					if(!TextUtils.isEmpty(mCurrentPersonNumber)){
+						userMsg.put("persons", mCurrentPersonNumber);
+						mCurrentPersonNumber = null;
+					}else{
+						userMsg.put("persons", mSpinnerModePerson.getItemAtPosition(0).toString());
+					}
+					// purpose
+					if(!TextUtils.isEmpty(mCurrentPurpose)){
+						userMsg.put("purpose", mCurrentPurpose);
+						mCurrentPurpose = null;
+					}
+					// destination
+					if(!TextUtils.isEmpty(mCurrentDestination)){
+						userMsg.put("destination", mCurrentDestination);
+						mCurrentDestination = null;
+					}
+					// reason
+					if(!TextUtils.isEmpty(mCurrentReason)){
+						userMsg.put("reason", mCurrentReason);
+						mCurrentReason = null;
+					}
+					notifyEvent(ae.getMessagePayload(), userMsg);					
 				}
-				if(!TextUtils.isEmpty(mCurrentPersonNumber)){
-					handleNote("Person(s): " + mCurrentPersonNumber);
-					mCurrentPersonNumber = null;
-				}
-				// purpose
-				if(!TextUtils.isEmpty(mCurrentPurpose)){
-					handleNote("Purpose: " + mCurrentPurpose);
-					mCurrentPurpose = null;
-				}
-				// destination
-				if(!TextUtils.isEmpty(mCurrentDestination)){
-					handleNote("Destination: " + mCurrentDestination);
-					mCurrentDestination = null;
-				}
-				// reason
-				if(!TextUtils.isEmpty(mCurrentReason)){
-					handleNote("Reason: " + mCurrentReason);
-					mCurrentReason = null;
-				}
+
 				mStatus = TravelStatus.MOVING;
 				break;
 		}
-		
 	}
 	
-	private void notifyEvent(final String payload){
+	private void notifyEvent(final String payload, HashMap<String, String> msg){
 		if(!TextUtils.isEmpty(payload)){
-			Intent i = new Intent();
-			i.setAction(CUSTOM_INTENT_ACTION);
-			i.putExtra("APPLICATION_ACTION", payload);
-			getSherlockActivity().sendBroadcast(i);
+			Intent intent = new Intent();
+			intent.setAction(CUSTOM_INTENT_ACTION);
+			intent.putExtra("APPLICATION_ACTION", payload);
+			if((msg != null) && (!msg.isEmpty())){
+				String appData = null;
+				try {
+					appData = TravelApp.getFormattedJsonObject(msg, "message").toString();				
+				}catch(Exception e){
+				}
+				if(!TextUtils.isEmpty(appData)){
+					intent.putExtra("APPLICATION_DATA", appData); 					
+				}
+			}
+			getSherlockActivity().sendBroadcast(intent);
 		} else {
 			mApp.showToastMessage(R.string.client_error);
 		}
 	}
-	
-	private void handleNote(final String note){
-		ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), 
-				new ActionEvent("USER_NOTE", System.currentTimeMillis(), note, true));
-		Intent intent = new Intent();
-		intent.setAction(CUSTOM_INTENT_ACTION);
-		intent.putExtra("APPLICATION_ACTION", "USER_NOTE");
-		intent.putExtra("APPLICATION_DATA", note);
-		getSherlockActivity().sendBroadcast(intent);
-	}
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.travel_menu, menu);

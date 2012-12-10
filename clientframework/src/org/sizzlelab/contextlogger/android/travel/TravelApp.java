@@ -2,7 +2,10 @@ package org.sizzlelab.contextlogger.android.travel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Set;
 
+import org.json.JSONObject;
 import org.sizzlelab.contextlogger.android.ClientApp;
 import org.sizzlelab.contextlogger.android.R;
 
@@ -90,6 +93,18 @@ public class TravelApp extends ClientApp {
 		editor.commit();
 	}	
 
+	public synchronized String getParkingInfo(){
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		return prefs.getString("parkInfo", null);
+	}
+	
+	public synchronized void saveParkingInfo(final String info) {
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString("parkInfo", info);
+		editor.commit();
+	}	
+	
 	public static ArrayList<String> getStringToList(final String array){
 		ArrayList<String> list = null;
 		if(TextUtils.isEmpty(array)){
@@ -116,6 +131,25 @@ public class TravelApp extends ClientApp {
 		if(view != null){
 			view.clearAnimation();
 		}
+	}
+	
+	public static final JSONObject getFormattedJsonObject(HashMap<String, String> data, String msgHeader){
+		try{
+			JSONObject ret = new JSONObject();		
+			JSONObject jdata = new JSONObject();
+			Set<String> keys = data.keySet();
+			for(String k : keys){
+				jdata.put(k, data.get(k));
+			}
+			if(TextUtils.isEmpty(msgHeader)){
+				return jdata;				
+			}else{
+				ret.put(msgHeader, jdata);
+				return ret;
+			}
+		}catch(Exception e){
+		}
+		return null;
 	}
 	
 }
