@@ -26,7 +26,11 @@
  */
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+     <item
+        android:id="@+id/menu_travel_cheating"
+    	android:title="@string/travel_cheating"
+ 		android:icon="@android:drawable/ic_dialog_alert"
+    	/> 
      <item
         android:id="@+id/menu_travel_history"
     	android:title="@string/travel_view_history"

@@ -60,17 +60,6 @@
 			android:prompt="@string/travel_parking_place_prompt"
 			/>		    
 
-	    <CheckBox 
-	        android:id="@+id/checkbox_travel_parking_free_charge"
-		    android:layout_height="wrap_content" 
-		    android:layout_width="match_parent"
-   		   	android:layout_marginTop="10dp"
-		   	android:layout_marginBottom="10dp"
-		   	android:layout_marginLeft="5dp"
-		   	android:layout_marginRight="5dp"
-	        android:text="@string/travel_parking_free_charge"
-	        android:checked="false"
-	        />		
 			
 		<TextView  
 		    android:layout_height="wrap_content" 
@@ -81,35 +70,16 @@
 		   	android:layout_marginRight="5dp"		
 			/>  		        
 			       
-		<LinearLayout 
-			android:layout_width="match_parent"
+		<com.WazaBe.HoloEverywhere.widget.Spinner 
+			android:id="@+id/spinner_travel_parking_price_list"
+			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:minWidth="230dp"
+			android:maxWidth="280dp"
 		   	android:layout_marginLeft="5dp"
 		   	android:layout_marginRight="5dp"
-		   	android:orientation="horizontal"
-		    >
-		    
-		    <com.WazaBe.HoloEverywhere.widget.SeekBar
-		        android:id="@+id/seek_bar_travel_parking_price"
-				android:layout_height="wrap_content" 
-		    	android:layout_width="wrap_content"
-		    	android:minWidth="180dp"
-		    	android:maxWidth="230dp"
-			    android:max="40"
-			    android:progress="4"
-			    android:layout_marginTop="5dp"
-		        />
-		    
-    		<TextView 
-    		    android:id="@+id/text_view_travel_parking_price"
-			    android:layout_height="wrap_content" 
-			    android:layout_width="wrap_content"
-			    android:paddingLeft="10dp"
-			    android:layout_gravity="center"
-				android:textSize="18sp"
-				/>  
-				
-		</LinearLayout>
+			android:prompt="@string/travel_parking_price"
+			/>	
 		
 		<TextView  
 		    android:layout_height="wrap_content" 

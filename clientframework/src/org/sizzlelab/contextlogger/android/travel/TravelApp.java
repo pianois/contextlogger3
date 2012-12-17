@@ -10,6 +10,7 @@ import org.sizzlelab.contextlogger.android.ClientApp;
 import org.sizzlelab.contextlogger.android.R;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.view.View;
@@ -104,6 +105,26 @@ public class TravelApp extends ClientApp {
 		editor.putString("parkInfo", info);
 		editor.commit();
 	}	
+	
+	public synchronized boolean isCheatingModeOn(){
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		return prefs.getBoolean("cheatingMode", false);
+	}
+	
+	public synchronized void saveCheatingMode(final boolean cheating){
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putBoolean("cheatingMode", cheating);
+		editor.commit();
+	}
+	
+	
+	public void sendLoggingEventBoradcast(final Intent intent){
+		if(isCheatingModeOn()) return;
+		if(intent != null){
+			sendBroadcast(intent);
+		}
+	}
 	
 	public static ArrayList<String> getStringToList(final String array){
 		ArrayList<String> list = null;

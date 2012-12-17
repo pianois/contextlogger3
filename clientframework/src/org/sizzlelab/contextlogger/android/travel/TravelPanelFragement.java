@@ -44,10 +44,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
@@ -57,9 +62,11 @@ import android.widget.TextView;
 
 import com.WazaBe.HoloEverywhere.widget.AdapterView;
 import com.WazaBe.HoloEverywhere.widget.AdapterView.OnItemSelectedListener;
+import com.WazaBe.HoloEverywhere.widget.Button;
 import com.WazaBe.HoloEverywhere.widget.EditText;
 import com.WazaBe.HoloEverywhere.widget.Spinner;
 import com.WazaBe.HoloEverywhere.widget.Switch;
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -68,6 +75,7 @@ import com.actionbarsherlock.view.MenuItem;
 import fi.aalto.chaow.android.app.BaseAlertDialog;
 import fi.aalto.chaow.android.app.BaseAlertDialog.AlertDialogListener;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
+import fi.aalto.chaow.android.utils.TextHelper;
 
 public class TravelPanelFragement extends SherlockFragment implements OnClickListener, Constants, OnCheckedChangeListener, 
 																						OnItemSelectedListener{
@@ -119,7 +127,6 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	
 	private View mViewNoTrip = null;
 	private View mViewTripContainer = null;
-	private View mViewParkingAnimation = null;
 	private TextView mTextViewDuration = null;
 	private TextView mTextViewStatus = null;
 	
@@ -138,6 +145,9 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	private String mCurrentReason = null;
 	private String mCurrentPurpose = null;
 	private String mCurrentDestination = null;
+	
+	private EditText mEditTextNote = null;
+	private Button mButtonSaveNote = null;
 	
 	public TravelPanelFragement(){
 	}
@@ -186,8 +196,35 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mTextViewDuration = (TextView)view.findViewById(R.id.text_view_travel_duration_value);
 		mLoggerSwitch = (Switch)getSherlockActivity().getSupportActionBar().getCustomView().findViewById(R.id.logger_switcher);
 		mTextViewStatus = (TextView)view.findViewById(R.id.text_view_travel_service_state);
-		mViewParkingAnimation = view.findViewById(R.id.view_travel_parking_animation);
-		mViewParkingAnimation.setOnClickListener(this);
+		mEditTextNote = (EditText)view.findViewById(R.id.edit_text_travel_note);
+		mEditTextNote.setOnTouchListener(new OnTouchListener(){
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if(!mIsRunning) {
+					TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+					return true;
+				}
+				mEditTextNote.setInputType(InputType.TYPE_CLASS_TEXT);
+				mEditTextNote.requestFocus();
+				TextHelper.showSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+				return true;
+			}
+		});
+		mEditTextNote.setInputType(InputType.TYPE_NULL);
+		mEditTextNote.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s) {
+				mButtonSaveNote.setEnabled(s.length() > 0 ? true : false );
+			}
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			}
+		});
+		mButtonSaveNote = (Button)view.findViewById(R.id.button_travel_save_note);
+		mButtonSaveNote.setOnClickListener(this);
 		return view;
 	}
 	
@@ -209,11 +246,9 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			}
 		}
 		if(parkingEvent == null){
-			mViewParkingAnimation.setVisibility(View.GONE);
-			mApp.clearAnimation(mViewParkingAnimation);
+			mApp.clearAnimation(mButtonParking);
 		}else{
-			mApp.startFadeInAnimation(mViewParkingAnimation);
-			mViewParkingAnimation.setVisibility(View.VISIBLE);
+			mApp.startFadeInAnimation(mButtonParking);
 		}
 	}
 	
@@ -258,7 +293,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			// enable all the components
 			toggleUIComponent(true);
 			invalidateUIComponents();
-			if(mStatus == TravelStatus.PAUSE){
+			if(mStatus != TravelStatus.IDLE){
 				mButtonParking.setVisibility(View.VISIBLE);
 			}else{
 				mButtonParking.setVisibility(View.GONE);
@@ -266,9 +301,11 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			if(mStatus == TravelStatus.MOVING){
 				mButtonPlay.setVisibility(View.GONE);
 				mButtonPause.setVisibility(View.VISIBLE);
+				mTextViewDuration.setEnabled(true);
 			}else if(mStatus == TravelStatus.PAUSE){
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
+				mTextViewDuration.setEnabled(false);
 			}
 			if((mStatus == TravelStatus.MOVING) || (mStatus == TravelStatus.PAUSE)){
 				mViewNoTrip.setVisibility(View.GONE);
@@ -289,7 +326,11 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			mViewTripContainer.setVisibility(View.GONE);
 			mButtonParking.setVisibility(View.GONE);
 		}
-		refreshSpinners();		
+		refreshSpinners();	
+		if(TextUtils.isEmpty(mEditTextNote.getEditableText().toString())){
+			mButtonSaveNote.setEnabled(false);
+		}
+		toggleCheatingText(mApp.isCheatingModeOn());
 	}
 
 	private void toggleUIComponent(final boolean enable){
@@ -300,7 +341,9 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mSpinnerModePerson.setEnabled(enable);
 		mSpinnerDestination.setEnabled(enable);
 		mSpinnerPurpose.setEnabled(enable);
-		mSpinnerReason.setEnabled(enable);		
+		mSpinnerReason.setEnabled(enable);	
+		mButtonSaveNote.setEnabled(enable);
+		mEditTextNote.setEnabled(enable);
 	}
 	
 	private void refreshModeSpinner(){
@@ -506,6 +549,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			default:
 				return;
 		}
+		TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
 	}
 
 	@Override
@@ -591,10 +635,10 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	public void onClick(View view) {
 		if(view != null){
 			final int viewId = view.getId();
-			if(viewId == R.id.view_travel_parking_animation){
-				mListener.onFragmentChanged(R.layout.travel_parking_panel, null);
+			if(R.id.button_travel_save_note == viewId){	
+				saveNote();
 				return;
-			}
+			}		
 			if(viewId == R.id.image_button_travel_parking){
 				mListener.onFragmentChanged(R.layout.travel_parking_panel, null);
 				return;
@@ -603,22 +647,22 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				notifyTravelingEvent(TravelStatus.PAUSE);
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
-				mButtonParking.setVisibility(View.VISIBLE);
+//				mButtonParking.setVisibility(View.VISIBLE);
 			}else if(viewId == R.id.image_button_travel_play){
 				notifyTravelingEvent(TravelStatus.MOVING);
 				mViewNoTrip.setVisibility(View.GONE);
 				mViewTripContainer.setVisibility(View.VISIBLE);
 				mButtonPlay.setVisibility(View.GONE);
 				mButtonPause.setVisibility(View.VISIBLE);
-				mButtonParking.setVisibility(View.GONE);
+//				mButtonParking.setVisibility(View.GONE);
 			}else if(viewId == R.id.image_button_travel_stop){
 				notifyTravelingEvent(TravelStatus.STOP);
 				mViewNoTrip.setVisibility(View.VISIBLE);
 				mViewTripContainer.setVisibility(View.GONE);
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
-				mButtonParking.setVisibility(View.GONE);
-			}			
+//				mButtonParking.setVisibility(View.GONE);
+			}	
 			mApp.saveTravelStauts(mStatus.ordinal());
 			invalidateUIComponents();
 		}
@@ -634,7 +678,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				Intent i = new Intent();
 				i.setAction(CUSTOM_INTENT_ACTION);
 				i.putExtra("APPLICATION_ACTION", payload);
-				getSherlockActivity().sendBroadcast(i);
+				sendEventBoradcast(i);
 			} else {
 				mApp.showToastMessage(R.string.client_error);
 			}
@@ -661,7 +705,8 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				// mode
 				ArrayList<ActionEvent> pauseList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
 				for(ActionEvent ae : pauseList){
-					if(!getString(R.string.travel).equals(ae.getActionEventName())){
+					if((!getString(R.string.travel).equals(ae.getActionEventName()))
+						&& (!getString(R.string.travel_parking).equals(ae.getActionEventName()))){
 						ae.confirmBreakTimestamp();
 						ae.setState(EventState.STOP);
 						ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
@@ -669,6 +714,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					}
 				} 					
 				mStatus = TravelStatus.PAUSE;
+				mTextViewDuration.setEnabled(false);
 				break;
 			case MOVING:
 				// mode
@@ -706,6 +752,10 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				}
 
 				mStatus = TravelStatus.MOVING;
+				mTextViewDuration.setEnabled(true);
+				if(mButtonParking.getVisibility() == View.GONE){
+					mButtonParking.setVisibility(View.VISIBLE);
+				}
 				break;
 		}
 	}
@@ -725,7 +775,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					intent.putExtra("APPLICATION_DATA", appData); 					
 				}
 			}
-			getSherlockActivity().sendBroadcast(intent);
+			sendEventBoradcast(intent);
 		} else {
 			mApp.showToastMessage(R.string.client_error);
 		}
@@ -784,10 +834,29 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				mLoggerSwitch.setChecked(!mIsRunning);
 			} 
 			return true;
+		} else if(itemId == R.id.menu_travel_cheating){
+			toggleCheatingMode();
 		}
 		return super.onOptionsItemSelected(item);
 	}
    
+	private void toggleCheatingMode(){
+		final boolean cheat = mApp.isCheatingModeOn();
+		toggleCheatingText(!cheat);
+		mApp.saveCheatingMode(!cheat);
+	}
+	
+	private void toggleCheatingText(final boolean cheat){
+		final ActionBar actionBar = getSherlockActivity().getSupportActionBar();
+		if(actionBar != null){
+			if(cheat){
+				actionBar.setSubtitle("Cheating ON");
+			}else{
+				actionBar.setSubtitle("");
+			}			
+		}
+	}
+	
 	private void exportData(){
 		Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
 		archiveIntent.setAction(MainPipeline.ACTION_ARCHIVE_DATA);
@@ -828,6 +897,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			getSherlockActivity().startService(archiveIntent);	
 			mIsRunning = true;
 		}
+		mStatus = TravelStatus.IDLE;
 		refreshUI();
 	}
 	
@@ -838,7 +908,26 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mIsRunning  = false;
 		refreshUI();
 	}
+		
+	private void saveNote(){
+		final String note = mEditTextNote.getText().toString();
+		mButtonSaveNote.setEnabled(false);
+		if(TextUtils.isEmpty(note)) return;
+		mEditTextNote.setText("");
+		TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+		mEditTextNote.setInputType(InputType.TYPE_NULL);
+		ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), 
+								new ActionEvent("USER_NOTE", System.currentTimeMillis(), note, true));
+		Intent intent = new Intent();
+		intent.setAction(CUSTOM_INTENT_ACTION);
+		intent.putExtra("APPLICATION_ACTION", "USER_NOTE");
+		intent.putExtra("APPLICATION_DATA", note);
+		sendEventBoradcast(intent);
+	}
 	
+	private void sendEventBoradcast(final Intent intent){
+		mApp.sendLoggingEventBoradcast(intent);
+	}
 	
 	public static class QuitAppDialog extends BaseAlertDialog{
 

@@ -3,7 +3,6 @@ package org.sizzlelab.contextlogger.android.travel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Locale;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,7 +12,6 @@ import org.sizzlelab.contextlogger.android.model.EventState;
 import org.sizzlelab.contextlogger.android.model.handler.ActionEventHandler;
 import org.sizzlelab.contextlogger.android.utils.Constants;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,22 +21,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.WazaBe.HoloEverywhere.widget.AdapterView;
 import com.WazaBe.HoloEverywhere.widget.AdapterView.OnItemSelectedListener;
-import com.WazaBe.HoloEverywhere.widget.SeekBar;
-import com.WazaBe.HoloEverywhere.widget.SeekBar.OnSeekBarChangeListener;
 import com.WazaBe.HoloEverywhere.widget.Spinner;
 import com.actionbarsherlock.app.SherlockFragment;
 
-import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
-
-public class TravelParkingPanelFragement extends SherlockFragment implements OnClickListener,OnCheckedChangeListener, OnItemSelectedListener, Constants{
+public class TravelParkingPanelFragement extends SherlockFragment implements OnClickListener, OnItemSelectedListener, Constants{
 
 	private Handler mHandler = new Handler();
 	private Runnable mTimedTask = new Runnable(){
@@ -55,42 +46,31 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 			mHandler.postDelayed(mTimedTask , 500);				
 		}
 	};
-	
-	private OnSupportFragmentListener mListener = null;
-	
+
 	private Spinner mSpinnerParkingPlace = null;
 	private Spinner mSpinnerPayment = null;
 	private Spinner mSpinnerMode = null;
 	private Spinner mSpinnerModePerson = null;
+	private Spinner mSpinnerPrice = null;
 	
 	private ImageButton mButtonPlay = null;
 	private ImageButton mButtonStop = null;
 	
-	private CheckBox mCheckBoxFree = null;
-	
-	private SeekBar mSeekBarPrice = null;
-
 	private TravelApp mApp = null;
 	
 	private View mViewNoParking = null;
 	private View mViewParkingDurationContainer = null;
 	private TextView mTextViewParkingDuration = null;
-	private TextView mTextViewParkingPrice = null;
 	
 	private String mCurrentMode = null;
 	private String mCurrentPersonNumber = null;
 	private String mParkingPlace = null;
+	private String mParkingPrice = null;
 	private String mPaymentMethod = null;
 	
 	public TravelParkingPanelFragement(){
 	}
 		
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		mListener = (OnSupportFragmentListener) activity;
-	}
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -106,6 +86,8 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		mSpinnerParkingPlace.setOnItemSelectedListener(this);
 		mSpinnerPayment = (Spinner)view.findViewById(R.id.spinner_travel_parking_payment_list);
 		mSpinnerPayment.setOnItemSelectedListener(this);
+		mSpinnerPrice = (Spinner)view.findViewById(R.id.spinner_travel_parking_price_list);
+		mSpinnerPrice.setOnItemSelectedListener(this);
 		mSpinnerMode = (Spinner)view.findViewById(R.id.spinner_travel_transport_mode_list);
 		mSpinnerMode.setOnItemSelectedListener(this);
 		mSpinnerModePerson = (Spinner)view.findViewById(R.id.spinner_travel_transport_mode_person_list);
@@ -114,26 +96,9 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		mButtonPlay.setOnClickListener(this);
 		mButtonStop = (ImageButton) view.findViewById(R.id.image_button_travel_parking_stop);
 		mButtonStop.setOnClickListener(this);
-		mSeekBarPrice = (SeekBar)view.findViewById(R.id.seek_bar_travel_parking_price);
-		mSeekBarPrice.setOnSeekBarChangeListener(new OnSeekBarChangeListener(){
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				setParkingPrice(seekBar);
-			}
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-				setParkingPrice(seekBar);
-			}			
-		});
-		mTextViewParkingPrice = (TextView)view.findViewById(R.id.text_view_travel_parking_price);
 		mViewNoParking = (TextView) view.findViewById(R.id.text_view_no_parking);
 		mViewParkingDurationContainer = view.findViewById(R.id.layout_parking_duration_container);
 		mTextViewParkingDuration = (TextView)view.findViewById(R.id.text_view_travel_parking_duration_value);
-		mCheckBoxFree = (CheckBox)view.findViewById(R.id.checkbox_travel_parking_free_charge);
-		mCheckBoxFree.setOnCheckedChangeListener(this);
 		return view;
 	}
 
@@ -157,8 +122,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		mButtonPlay.setEnabled(enable);
 		mSpinnerMode.setEnabled(enable);
 		mSpinnerModePerson.setEnabled(enable);
-		mSeekBarPrice.setEnabled(enable);
-		mCheckBoxFree.setEnabled(enable);
+		mSpinnerPrice.setEnabled(enable);
 	}
 	
 	private void refreshUI(){
@@ -172,9 +136,9 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		} 
 		refreshSpinners();	
 		if(parking == null){
-			setParkingPrice(mSeekBarPrice);
 			mViewNoParking.setVisibility(View.VISIBLE);
 			mViewParkingDurationContainer.setVisibility(View.GONE);
+			mButtonStop.setEnabled(false);
 		}else{
 			toggleUIComponent(false);
 			final String parkingInfo = mApp.getParkingInfo();
@@ -190,6 +154,8 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				}
 			}
 			mButtonStop.setEnabled(true);
+			mSpinnerPayment.setEnabled(true);
+			mSpinnerPrice.setEnabled(true);
 			mViewNoParking.setVisibility(View.GONE);
 			mViewParkingDurationContainer.setVisibility(View.VISIBLE);
 		}
@@ -205,18 +171,8 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		if(!data.isNull("place")){
 			fillSpinnerValue(data.getString("place"), mSpinnerParkingPlace);
 		}
-		
 		if(!data.isNull("price")){
-			String price = data.getString("price");
-			try{
-				final int p = Integer.valueOf(price);
-				mSeekBarPrice.setProgress(p);
-				if(p <= 0){
-					mCheckBoxFree.setChecked(true);
-					return;
-				}				
-			}catch(Exception e){
-			}
+			fillSpinnerValue(data.getString("price"), mSpinnerPrice);
 		}
 		if(!data.isNull("payment")){
 			fillSpinnerValue(data.getString("payment"), mSpinnerPayment);
@@ -238,6 +194,15 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		refreshModeSpinner();
 		refreshParkingPlaceSpinner();
 		refreshPaymentMethodSpinner();
+		refreshPriceSpinner();
+	}
+	
+	private void refreshPriceSpinner(){
+		String[] arrayPrice = getResources().getStringArray(R.array.travel_parking_price);
+		ArrayList<String> listPrice = new ArrayList<String>(Arrays.asList(arrayPrice));
+		ArrayAdapter<String> dataAdapterPlace = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+				R.layout.spinner_item, listPrice);
+		mSpinnerPrice.setAdapter(dataAdapterPlace);
 	}
 	
 	private void refreshParkingPlaceSpinner(){
@@ -249,7 +214,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 	}
 	
 	private void refreshPaymentMethodSpinner(){
-		String[] arrayPayment = getResources().getStringArray(R.array.travel_parking_paymeny_method);
+		String[] arrayPayment = getResources().getStringArray(R.array.travel_parking_payment_method);
 		ArrayList<String> listPayment = new ArrayList<String>(Arrays.asList(arrayPayment));
 		ArrayAdapter<String> dataAdapterPayment = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
 				R.layout.spinner_item, listPayment);
@@ -260,8 +225,6 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		// mode
 		String[] arrayMode = getResources().getStringArray(R.array.travel_mode_array);
 		ArrayList<String> listMode = new ArrayList<String>(Arrays.asList(arrayMode));
-		// remove the last one (add custom item)
-		listMode.remove(listMode.size() - 1); 
 		// load the saved data, if any
 		ArrayList<String> modeTempList = TravelApp.getStringToList(mApp.getTravelModes());
 		if((modeTempList != null) && (!modeTempList.isEmpty())){
@@ -294,6 +257,8 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				mParkingPlace = itemName;
 			}else if(viewId == R.id.spinner_travel_transport_mode_person_list){
 				mCurrentPersonNumber = itemName;
+			}else if(viewId == R.id.spinner_travel_parking_price_list){
+				mParkingPrice = itemName;
 			}
 		}
 	}
@@ -342,18 +307,21 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		}else{
 			userMsg.put("place", mSpinnerParkingPlace.getItemAtPosition(0).toString());
 		}			
-
-		if(mCheckBoxFree.isChecked()){
-			userMsg.put("price", "0");			
+		
+		if(!TextUtils.isEmpty(mParkingPrice)){
+			userMsg.put("price", mParkingPrice);
+			mParkingPrice = null;
 		}else{
-			if(!TextUtils.isEmpty(mPaymentMethod)){
-				userMsg.put("payment", mPaymentMethod);
-				mPaymentMethod = null;
-			}else{
-				userMsg.put("payment", mSpinnerPayment.getItemAtPosition(0).toString());
-			}
-			userMsg.put("price", String.valueOf(mSeekBarPrice.getProgress()));			
+			userMsg.put("price", mSpinnerPrice.getItemAtPosition(0).toString());
 		}
+
+		if(!TextUtils.isEmpty(mPaymentMethod)){
+			userMsg.put("paymentMethod", mPaymentMethod);
+			mPaymentMethod = null;
+		}else{
+			userMsg.put("paymentMethod", mSpinnerPayment.getItemAtPosition(0).toString());
+		}		
+		
 		notifyEvent(ae.getMessagePayload(), userMsg);	
 		refreshUI();
 	}
@@ -373,8 +341,10 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 					intent.putExtra("APPLICATION_DATA", appData); 
 					mApp.saveParkingInfo(appData);
 				}
+			}else{
+				mApp.saveParkingInfo(null);
 			}
-			getSherlockActivity().sendBroadcast(intent);
+			sendEventBoradcast(intent);
 		} else {
 			mApp.showToastMessage(R.string.client_error);
 		}
@@ -393,23 +363,12 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				break;
 			}
 		} 
-		mListener.onFragmentChanged(R.layout.travel_diary, null);
+		// pop up this out of the stack
+		getSherlockActivity().getSupportFragmentManager().popBackStack();
 	}
 	
-	private void setParkingPrice(final SeekBar seekBar){
-		if((seekBar != null) && (mTextViewParkingPrice != null)){
-			mTextViewParkingPrice.setText(String.format(Locale.getDefault(), 
-					getString(R.string.travel_parking_price_value), String.valueOf(seekBar.getProgress())));
-		}		
+	private void sendEventBoradcast(final Intent intent){
+		mApp.sendLoggingEventBoradcast(intent);
 	}
 	
-	@Override
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		mSeekBarPrice.setEnabled(!isChecked);
-		mSpinnerPayment.setEnabled(!isChecked);
-		if(isChecked){
-			mSeekBarPrice.setProgress(0);
-		}
-	}
-
 }

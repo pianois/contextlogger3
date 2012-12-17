@@ -33,7 +33,7 @@
     <string name="travel_mode_of_transport">Mode of transport</string>    
     <string name="travel_purpose">Purpose</string>  
     <string name="travel_destination">Destination</string>     
-    <string name="travel_reason">Reason</string>     
+    <string name="travel_reason">Reason for mode choice</string>     
     <string name="travel_parking_place">Parking place</string> 
     <string name="travel_parking_price">Price</string>  
     <string name="travel_parking_price_value">%s &#8364;</string> 
@@ -50,49 +50,135 @@
 	<string name="travel_view_history">View history</string>	
 
 	<string-array name="travel_mode_array">
-        <item>Walking</item>
-        <item>Cycling</item>
-        <item>Driving a car</item>
-        <item>Taking a bus</item>
-        <item>Taking a train</item>
-        <item>Taking a subway</item>
-        <item>Taking a taxi</item>
-        <item>Add custom mode</item>
+           <item>EV</item>
+           <item>Other car</item>
+           <item>Bus</item>
+           <item>Tram</item>
+           <item>Commuter train</item>
+           <item>Metro</item>
+           <item>Bicycle</item>
+           <item>Pedelec</item>
+           <item>Walk and other pedestrian</item>
+           <item>Light 4-wheeler</item>
+           <item>Light EV</item>
+           <item>Scooter, moped</item>
+           <item>Motor cycle</item>
+	       <item>Train</item>
+	       <item>Long distance bus</item>
+	       <item>Charter bus</item>
+	       <item>Taxi</item>
+	       <item>Ferry or ship</item>
+	       <item>Airplane</item>
+	       <item>Quad bike</item>
+	       <item>Handicapped conveyor</item>
+	       <item>Van</item>
+	       <item>Truck</item>
+	       <item>EV, passenger</item>
+	       <item>Other car, passenger</item>
+	       <item>Light 4-w, passenger</item>
+	       <item>Light EV, passenger</item>
+	       <item>Van, passenger</item>
+	       <item>Truck, passenger</item>
+	       <item>Other mode</item>
+        <item>Custom</item>
     </string-array>
 
     <string-array name="travel_purpose_array">
-        <item>Study</item>
-        <item>Work</item>
+       	<item>Work</item>
+	    <item>Business</item>
+        <item>School/Study</item>
+        <item>Commodities</item>
         <item>Shopping</item>
-        <item>Meet friend</item>
-        <item>Add custom purpose</item>
+        <item>Running errands</item>
+        <item>Lunch/Restaurant</item>
+        <item>Chauffeur</item>
+        <item>Sport</item>
+        <item>Culture event</item>
+		<item>Leisure</item>
+        <item>Social visit</item>
+        <item>Hobby</item>
+        <item>Tourism</item>
+        <item>Leisure driving</item>
+        <item>Gottage trip</item>
+        <item>Other spare time</item>
+        <item>Custom</item>
     </string-array>    
     
     <string-array name="travel_destination_array">
-        <item>Helsinki center</item>
-        <item>Espoon keskus</item>
-        <item>Otaniemi</item>
-        <item>Helsinki-Vantaa airport</item>
-        <item>Add custom destination</item>
+        <item>Home</item>
+        <item>Other residence</item>
+        <item>Workplace</item>
+        <item>Other workplace</item>
+        <item>School, university etc.</item>
+        <item>Business location</item>
+        <item>Kiss park</item>
+        <item>Loading place</item>
+        <item>Crèche</item>
+        <item>Grocery shop</item>
+        <item>Shopping mall</item>
+        <item>Other shop</item>
+        <item>Errand location</item>
+        <item>Restaurant</item>
+        <item>Sport place</item>
+        <item>Event place</item>
+        <item>Meeting destination</item>
+        <item>Other leisure place</item>
+        <item>Cottage</item>
+        <item>Hotel/Motel etc.</item>
+        <item>Custom</item>
     </string-array>
     
     <string-array name="travel_reason_array">
-        <item>Cheap</item>
-        <item>Fast</item>
-        <item>Have a fun</item>
-        <item>Add custom reason</item>
+        <item>Travel time</item>
+        <item>Price</item>
+        <item>Convenience</item>
+        <item>Sporting</item>
+        <item>Like this mode</item>
+        <item>No alternative available</item>
+        <item>No park place for car</item>
+        <item>Car broken</item>
+        <item>No specific reason</item>
+		<item>Other reason</item>
+        <item>Custom</item>
     </string-array>    
 
-    <string-array name="travel_parking_paymeny_method">
-        <item>Cash</item>
-        <item>Bank card</item>
-        <item>Others</item>
+    <string-array name="travel_parking_payment_method">
+    	<item>Cash</item>
+    	<item>Credit card</item>
+    	<item>Cell phone</item>
+    	<item>Employer pays</item>
+    	<item>Monthly rent</item>
+    	<item>Travel card</item>
+    	<item>Shopping refund</item>
+    	<item>Other method</item>
+    	<item>Dont know</item>
+    	<item>Custom</item>
+    </string-array>
+    
+    <string-array name="travel_parking_price">
+        <item>Free</item>
+        <item>Up to 1 &#8364;/h</item>
+        <item>Over 1 to 2 &#8364;/h</item>
+        <item>Over 2 to 4 &#8364;/h</item>
+        <item>Over 4 &#8364;/h</item>
+        <item>Up to 8 &#8364;/day</item>
+        <item>Over 8 to 16 &#8364;/day</item>
+        <item>Over 16 to 32 &#8364;/day</item>
+        <item>Over 32 &#8364;/day</item>
+        <item>Resident park licence</item>
+        <item>Custom</item>
     </string-array>    
 
     <string-array name="travel_parking_place">
-        <item>Street</item>
-        <item>Garage</item>
-        <item>Others</item>
+        <item>Cave</item>
+        <item>Cave with charger</item>
+        <item>Park house</item>
+        <item>Park house, charger</item>
+        <item>Open area</item>
+        <item>Street side</item>
+        <item>Park+ride</item>
+        <item>Park+ride, charger</item>
+		<item>Custom</item>
     </string-array>    
     
     <string name="travel_duration">Duration of the trip: </string>
@@ -116,6 +202,7 @@
 	<string name="travel_purpose_dialog">Purpose</string>	
 			
     <string name="view_history">View history</string>
+        <string name="travel_cheating">Cheating mode</string>
     <string name="travel_custom_item_hint">pleae specify the item</string> 
 
 	<string name="no_data">There is no event data yet.</string>   
@@ -129,4 +216,7 @@
 	<string name="travel_parking_free_charge">free charge</string>
 	<string name="travel_parking_duration">Duration of the parking: </string>
 	<string name="travel_no_parking">No parking active yet</string>
+	
+	<string name="travel_input_note">input note</string>
+	<string name="travel_save_note">Save</string>	
 </resources>

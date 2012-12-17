@@ -35,6 +35,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -49,7 +50,7 @@ import com.actionbarsherlock.view.MenuItem;
 import fi.aalto.chaow.android.app.BaseFragmentActivity;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
 
-public class TravelActivity extends BaseFragmentActivity implements OnSupportFragmentListener, 
+public class TravelActivity extends BaseFragmentActivity implements OnSupportFragmentListener, OnBackStackChangedListener,
 														Constants, OnSharedPreferenceChangeListener{
 
 	private ActionBar mActionBar = null;
@@ -61,6 +62,8 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_act);
 		getWindow().setFormat(PixelFormat.RGBA_8888); 
+		// add back stack changed listener
+		getSupportFragmentManager().addOnBackStackChangedListener(this);
 		initUI();
 		MainPipeline.getSystemPrefs(getApplicationContext()).registerOnSharedPreferenceChangeListener(this);
 	}
@@ -69,6 +72,7 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 	    // Set up the action bar.
         mActionBar = getSupportActionBar();
         mActionBar.setDisplayShowTitleEnabled(true);
+        mActionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_USE_LOGO |ActionBar.DISPLAY_SHOW_TITLE);
         mActionBar.setNavigationMode(ActionBar.DISPLAY_SHOW_CUSTOM);
         mActionBar.setHomeButtonEnabled(false);
         mActionBar.setDisplayShowCustomEnabled(true);
@@ -95,7 +99,6 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		final int itemId = item.getItemId();
 		if(itemId == android.R.id.home){
-			resetActionbar();
 			getSupportFragmentManager().popBackStack();
 			return true;
 		}
@@ -117,11 +120,7 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 			fragment = new LoggerHistoryFragment();
 		} else if(layoutResId == R.layout.travel_parking_panel){
 			fragment = new TravelParkingPanelFragement();
-		} else if(layoutResId == R.layout.travel_diary){
-			resetActionbar();
-			getSupportFragmentManager().popBackStack();
-			return;
-		}
+		} 
 		
 		if(fragment != null){
 			if(args != null){
@@ -152,21 +151,25 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 		 mSwitcherView.setVisibility(View.INVISIBLE);
 	}
 	
-	private void resetActionbar(){
-		if((getSupportFragmentManager().findFragmentByTag("loggerHistory") != null)
-			||(getSupportFragmentManager().findFragmentByTag("travelParkingPanel") != null)){
-			 mActionBar.setHomeButtonEnabled(false);
-			 mActionBar.setDisplayHomeAsUpEnabled(false);
-			 mSwitcherView.setVisibility(View.VISIBLE);				
-		}
-	}
-	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if(keyCode == KeyEvent.KEYCODE_BACK){
-			resetActionbar();
+			if(getSupportFragmentManager().getBackStackEntryCount() == 0){
+				finish();
+				return true;
+			}
 		}
 		return super.onKeyDown(keyCode, event);
 	}
 
+	@Override
+	public void onBackStackChanged() {
+		final int backStackCount = getSupportFragmentManager().getBackStackEntryCount();
+		if(backStackCount == 0){
+			 mActionBar.setHomeButtonEnabled(false);
+			 mActionBar.setDisplayHomeAsUpEnabled(false);
+			 mSwitcherView.setVisibility(View.VISIBLE);	
+		}
+	}
+	
 }
