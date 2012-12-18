@@ -293,10 +293,18 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			// enable all the components
 			toggleUIComponent(true);
 			invalidateUIComponents();
-			if(mStatus != TravelStatus.IDLE){
-				mButtonParking.setVisibility(View.VISIBLE);
-			}else{
+			ActionEvent parkingEvent = null;
+			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+			for(ActionEvent ae : parkingList){
+				if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
+					parkingEvent = ae;
+					break;
+				}
+			}
+			if((mStatus == TravelStatus.IDLE) || (parkingEvent == null)){
 				mButtonParking.setVisibility(View.GONE);
+			}else{
+				mButtonParking.setVisibility(View.VISIBLE);
 			}
 			if(mStatus == TravelStatus.MOVING){
 				mButtonPlay.setVisibility(View.GONE);

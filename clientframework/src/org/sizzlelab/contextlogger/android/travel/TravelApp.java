@@ -80,7 +80,6 @@ public class TravelApp extends ClientApp {
 		editor.putString("travelReason", reason);
 		editor.commit();
 	}
-
 	
 	public synchronized int getTravelStatus(){
 		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
@@ -118,7 +117,41 @@ public class TravelApp extends ClientApp {
 		editor.commit();
 	}
 	
+	public synchronized String getParkingPayment(){
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		return prefs.getString("parkingPayment", null);
+	}
 	
+	public synchronized void saveParkingPayment(String payment) {
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString("parkingPayment", payment);
+		editor.commit();
+	}
+	
+	public synchronized String getParkingPrice(){
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		return prefs.getString("parkingPrice", null);
+	}
+	
+	public synchronized void saveParkingPrice(String price) {
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString("parkingPrice", price);
+		editor.commit();
+	}
+	
+	public synchronized String getParkingPlace(){
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		return prefs.getString("parkingPlace", null);
+	}
+	
+	public synchronized void saveParkingPlace(String place) {
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString("parkingPlace", place);
+		editor.commit();
+	}
 	public void sendLoggingEventBoradcast(final Intent intent){
 		if(isCheatingModeOn()) return;
 		if(intent != null){
