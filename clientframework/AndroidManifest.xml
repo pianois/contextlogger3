@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.sizzlelab.contextlogger.android"
-      android:versionCode="11"
+      android:versionCode="12"
       android:installLocation="preferExternal"
-      android:versionName="1.2.1">
+      android:versionName="1.2.2">
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="16" />
 
 	<uses-permission android:name="android.permission.WAKE_LOCK"/>

@@ -93,6 +93,18 @@ public class TravelApp extends ClientApp {
 		editor.commit();
 	}	
 
+	public synchronized String getTravelSelectionInfo(){
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		return prefs.getString("travelSelectionInfo", null);
+	}
+	
+	public synchronized void saveTravelSelectionInfo(final String info) {
+		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString("travelSelectionInfo", info);
+		editor.commit();
+	}		
+	
 	public synchronized String getParkingInfo(){
 		SharedPreferences prefs = getSharedPreferences(PREFS_INDICATOR, Context.MODE_PRIVATE);
 		return prefs.getString("parkInfo", null);

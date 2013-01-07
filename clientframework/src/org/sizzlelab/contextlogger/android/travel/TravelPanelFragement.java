@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.sizzlelab.contextlogger.android.R;
 import org.sizzlelab.contextlogger.android.io.MainPipeline;
 import org.sizzlelab.contextlogger.android.model.ActionEvent;
@@ -287,25 +289,27 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		}catch(IndexOutOfBoundsException e){
 			mStatus = TravelStatus.IDLE;
 		}
-
+		refreshSpinners();
 		if(mIsRunning){
 			mTextViewStatus.setText(R.string.travel_service_running);
 			// enable all the components
 			toggleUIComponent(true);
 			invalidateUIComponents();
-			ActionEvent parkingEvent = null;
-			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
-			for(ActionEvent ae : parkingList){
-				if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
-					parkingEvent = ae;
-					break;
-				}
-			}
-			if((mStatus == TravelStatus.IDLE) || (parkingEvent == null)){
-				mButtonParking.setVisibility(View.GONE);
-			}else{
-				mButtonParking.setVisibility(View.VISIBLE);
-			}
+			// set parking button visible
+			mButtonParking.setVisibility(View.VISIBLE);
+//			ActionEvent parkingEvent = null;
+//			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+//			for(ActionEvent ae : parkingList){
+//				if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
+//					parkingEvent = ae;
+//					break;
+//				}
+//			}
+//			if((mStatus == TravelStatus.IDLE) || (parkingEvent == null)){
+//				mButtonParking.setVisibility(View.GONE);
+//			}else{
+//				mButtonParking.setVisibility(View.VISIBLE);
+//			}
 			if(mStatus == TravelStatus.MOVING){
 				mButtonPlay.setVisibility(View.GONE);
 				mButtonPause.setVisibility(View.VISIBLE);
@@ -318,6 +322,8 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			if((mStatus == TravelStatus.MOVING) || (mStatus == TravelStatus.PAUSE)){
 				mViewNoTrip.setVisibility(View.GONE);
 				mViewTripContainer.setVisibility(View.VISIBLE);
+				// read data 
+				readTravelSelectionInfo();
 			}else{
 				mViewNoTrip.setVisibility(View.VISIBLE);
 				mViewTripContainer.setVisibility(View.GONE);
@@ -334,13 +340,57 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			mViewTripContainer.setVisibility(View.GONE);
 			mButtonParking.setVisibility(View.GONE);
 		}
-		refreshSpinners();	
+	
 		if(TextUtils.isEmpty(mEditTextNote.getEditableText().toString())){
 			mButtonSaveNote.setEnabled(false);
 		}
 		toggleCheatingText(mApp.isCheatingModeOn());
 	}
 
+	private void readTravelSelectionInfo(){
+		final String info = mApp.getTravelSelectionInfo();
+		if(!TextUtils.isEmpty(info)){
+			try {
+				JSONObject object = new JSONObject(info);
+				if(object.isNull("message")){
+					fillValue(object);
+				}else{
+					fillValue(object.getJSONObject("message")); 
+				}
+			} catch (JSONException e) {
+			}
+		}
+	}
+	
+	private void fillValue(JSONObject data)throws JSONException{
+		if(!data.isNull("mode")){
+			fillSpinnerValue(data.getString("mode"), mSpinnerMode);
+		}
+		if(!data.isNull("persons")){
+			fillSpinnerValue(data.getString("persons"), mSpinnerModePerson);
+		}
+		if(!data.isNull("purpose")){
+			fillSpinnerValue(data.getString("purpose"), mSpinnerPurpose);
+		}
+		if(!data.isNull("destination")){
+			fillSpinnerValue(data.getString("destination"), mSpinnerDestination);
+		}
+		if(!data.isNull("reason")){
+			fillSpinnerValue(data.getString("reason"), mSpinnerReason );
+		}
+	}
+
+	private void fillSpinnerValue(final String value, final Spinner s){
+		if(TextUtils.isEmpty(value) || (s == null)) return;
+		for(int i = 0; i < s.getCount(); i++){
+			String item = s.getItemAtPosition(i).toString();
+			if((!TextUtils.isEmpty(item)) && value.equals(item)){
+				s.setSelection(i, false);
+				break;
+			}
+		}		
+	}
+	
 	private void toggleUIComponent(final boolean enable){
 		mButtonPause.setEnabled(enable);
 		mButtonStop.setEnabled(enable);
@@ -670,6 +720,10 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
 //				mButtonParking.setVisibility(View.GONE);
+				// clear data 
+				mApp.saveTravelSelectionInfo(null);
+				// rest spinners
+				refreshSpinners();
 			}	
 			mApp.saveTravelStauts(mStatus.ordinal());
 			invalidateUIComponents();
@@ -731,10 +785,13 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 					ae.setState(EventState.START);
 					ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), ae);	
 
-					mCurrentMode = null;
 					
 					HashMap<String, String> userMsg = new HashMap<String,String>();
-					
+
+					if(!TextUtils.isEmpty(mCurrentMode)){
+						userMsg.put("mode", mCurrentMode);
+						mCurrentMode = null;
+					}
 					if(!TextUtils.isEmpty(mCurrentPersonNumber)){
 						userMsg.put("persons", mCurrentPersonNumber);
 						mCurrentPersonNumber = null;
@@ -756,14 +813,22 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 						userMsg.put("reason", mCurrentReason);
 						mCurrentReason = null;
 					}
-					notifyEvent(ae.getMessagePayload(), userMsg);					
+					notifyEvent(ae.getMessagePayload(), userMsg);
+					String appData = null;
+					try {
+						appData = TravelApp.getFormattedJsonObject(userMsg, "message").toString();				
+					}catch(Exception e){
+					}
+					if(!TextUtils.isEmpty(appData)){
+						mApp.saveTravelSelectionInfo(appData);						
+					}
 				}
 
 				mStatus = TravelStatus.MOVING;
 				mTextViewDuration.setEnabled(true);
-				if(mButtonParking.getVisibility() == View.GONE){
-					mButtonParking.setVisibility(View.VISIBLE);
-				}
+//				if(mButtonParking.getVisibility() == View.GONE){
+//					mButtonParking.setVisibility(View.VISIBLE);
+//				}
 				break;
 		}
 	}
