@@ -50,7 +50,7 @@ import com.actionbarsherlock.view.MenuItem;
 import fi.aalto.chaow.android.app.BaseFragmentActivity;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
 
-
+// TODO rest Action bar when fragment changed
 public class TravelActivity extends BaseFragmentActivity implements OnSupportFragmentListener, OnBackStackChangedListener,
 														Constants, OnSharedPreferenceChangeListener{
 
@@ -149,7 +149,7 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 	private void constructActionbar(){
 		 mActionBar.setHomeButtonEnabled(true);
 		 mActionBar.setDisplayHomeAsUpEnabled(true);
-		 mSwitcherView.setVisibility(View.INVISIBLE);
+		 mSwitcherView.setVisibility(View.GONE);
 	}
 	
 	@Override
