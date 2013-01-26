@@ -39,6 +39,7 @@
 	    android:minWidth="40dp"
 	    android:maxWidth="55dp"
    	    android:gravity="center_vertical|left"
+  	    android:textColor="@android:color/black"
 	    android:textSize="18sp"
 		/>
 
@@ -56,6 +57,7 @@
 		    android:layout_height="wrap_content" 
 		    android:layout_width="wrap_content"
 		    android:layout_marginRight="10dp"
+    	    android:textColor="@android:color/black"
 		    android:singleLine="false"
 		    android:textSize="20sp"
 			/>  
@@ -64,6 +66,7 @@
 		    android:id="@+id/text_view_event_action_history" 		      
 		    android:layout_height="wrap_content" 
 		    android:layout_width="wrap_content"
+    	    android:textColor="@android:color/black"
 		    android:textSize="18sp"
 			/> 		
 			    

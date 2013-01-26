@@ -21,7 +21,7 @@
     <application android:icon="@drawable/icon" 
         		android:allowBackup="false"
         		android:label="@string/travel_app_name"
-        		android:theme="@style/Holo.Theme.Sherlock" 
+        		android:theme="@style/Holo.Theme.Light.DarkActionBar" 
         		android:name=".travel.TravelApp">
 		<uses-library android:name="com.google.gson" android:required="false" />
 		<uses-library android:name="edu.mit.media.funf" android:required="false" />

@@ -27,21 +27,19 @@ package org.sizzlelab.contextlogger.android;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.sizzlelab.contextlogger.android.R;
+import org.holoeverywhere.LayoutInflater;
+import org.holoeverywhere.app.ListFragment;
 import org.sizzlelab.contextlogger.android.model.ActionEvent;
 import org.sizzlelab.contextlogger.android.model.EventInfo;
 import org.sizzlelab.contextlogger.android.model.EventState;
 import org.sizzlelab.contextlogger.android.model.handler.ActionEventHandler;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleAdapter;
 
-import com.actionbarsherlock.app.SherlockListFragment;
-
-public class LoggerHistoryFragment extends SherlockListFragment{
+public class LoggerHistoryFragment extends ListFragment{
 
 	private ArrayList<HashMap<String, Object>> mShownContent = null;
 	private SimpleAdapter mAdapter = null;
@@ -74,7 +72,7 @@ public class LoggerHistoryFragment extends SherlockListFragment{
 			mAdapter = null;
 			mActionEventList.clear();
 		}
-		mActionEventList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), true);
+		mActionEventList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), true);
 		if(mActionEventList.isEmpty()){
 			mNoData.setVisibility(View.VISIBLE);
 			return;
@@ -103,7 +101,7 @@ public class LoggerHistoryFragment extends SherlockListFragment{
        		mShownContent.add(data);
 		}
 
-		mAdapter =  new SimpleAdapter(getSherlockActivity().getApplicationContext(), mShownContent, 
+		mAdapter =  new SimpleAdapter(getSupportActivity().getApplicationContext(), mShownContent, 
 				R.layout.history_list_item, new String[]{"Time", "EventAndNote" , "State"}, 
 				new int[]{R.id.text_view_event_history_time, R.id.text_view_event_history_name_and_note,
 				R.id.text_view_event_action_history});

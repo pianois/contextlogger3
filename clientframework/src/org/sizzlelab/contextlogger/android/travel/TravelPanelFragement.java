@@ -29,6 +29,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.holoeverywhere.LayoutInflater;
+import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.app.AlertDialog;
+import org.holoeverywhere.app.Dialog;
+import org.holoeverywhere.app.Fragment;
+import org.holoeverywhere.widget.AdapterView;
+import org.holoeverywhere.widget.AdapterView.OnItemSelectedListener;
+import org.holoeverywhere.widget.Button;
+import org.holoeverywhere.widget.EditText;
+import org.holoeverywhere.widget.Spinner;
+import org.holoeverywhere.widget.Switch;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sizzlelab.contextlogger.android.R;
@@ -39,9 +50,6 @@ import org.sizzlelab.contextlogger.android.model.handler.ActionEventHandler;
 import org.sizzlelab.contextlogger.android.travel.TravelPanelFragement.CustomSubjectItemDialog.CustomSubjectItemListener;
 import org.sizzlelab.contextlogger.android.utils.Constants;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -50,7 +58,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -62,14 +69,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.WazaBe.HoloEverywhere.widget.AdapterView;
-import com.WazaBe.HoloEverywhere.widget.AdapterView.OnItemSelectedListener;
-import com.WazaBe.HoloEverywhere.widget.Button;
-import com.WazaBe.HoloEverywhere.widget.EditText;
-import com.WazaBe.HoloEverywhere.widget.Spinner;
-import com.WazaBe.HoloEverywhere.widget.Switch;
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -79,14 +79,14 @@ import fi.aalto.chaow.android.app.BaseAlertDialog.AlertDialogListener;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
 import fi.aalto.chaow.android.utils.TextHelper;
 
-public class TravelPanelFragement extends SherlockFragment implements OnClickListener, Constants, OnCheckedChangeListener, 
+public class TravelPanelFragement extends Fragment implements OnClickListener, Constants, OnCheckedChangeListener, 
 																						OnItemSelectedListener{
 
 	private Handler mHandler = new Handler();
 	private Runnable mTimedTask = new Runnable(){
 		@Override
 		public void run() {
-			ArrayList<ActionEvent> travelList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+			ArrayList<ActionEvent> travelList = ActionEventHandler.getInstance().getAllItems(getActivity().getApplicationContext(), false);
 			for(ActionEvent ae : travelList){
 				if(TravelApp.getInstance().getString(R.string.travel).equals(ae.getActionEventName())){
 					if(mTextViewDuration != null){
@@ -150,7 +150,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	
 	private EditText mEditTextNote = null;
 	private Button mButtonSaveNote = null;
-	
+
 	public TravelPanelFragement(){
 	}
 	
@@ -164,9 +164,9 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+		Intent archiveIntent = new Intent(getActivity().getApplicationContext(), MainPipeline.class);
 		archiveIntent.setAction(MainPipeline.ACTION_ENABLE);
-		getSherlockActivity().startService(archiveIntent);	
+		getSupportActivity().startService(archiveIntent);	
 		mIsRunning = true;
 		mApp = TravelApp.getInstance();
 	}
@@ -196,19 +196,19 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mViewNoTrip = view.findViewById(R.id.text_view_no_trip);
 		mViewTripContainer = view.findViewById(R.id.layout_trip_duration_container);
 		mTextViewDuration = (TextView)view.findViewById(R.id.text_view_travel_duration_value);
-		mLoggerSwitch = (Switch)getSherlockActivity().getSupportActionBar().getCustomView().findViewById(R.id.logger_switcher);
+		mLoggerSwitch = (Switch)getSupportActivity().getSupportActionBar().getCustomView().findViewById(R.id.logger_switcher);
 		mTextViewStatus = (TextView)view.findViewById(R.id.text_view_travel_service_state);
 		mEditTextNote = (EditText)view.findViewById(R.id.edit_text_travel_note);
 		mEditTextNote.setOnTouchListener(new OnTouchListener(){
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				if(!mIsRunning) {
-					TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+					TextHelper.hideSoftInput(getActivity().getApplicationContext(), mEditTextNote);
 					return true;
 				}
 				mEditTextNote.setInputType(InputType.TYPE_CLASS_TEXT);
 				mEditTextNote.requestFocus();
-				TextHelper.showSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+				TextHelper.showSoftInput(getActivity().getApplicationContext(), mEditTextNote);
 				return true;
 			}
 		});
@@ -239,8 +239,8 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	}
 	
 	private void toggleParkingLogoAnimation(){
-		ActionEvent parkingEvent = null;
-		ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+		ActionEvent parkingEvent = null; //this.getSupportActivity()
+		ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 		for(ActionEvent ae : parkingList){
 			if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
 				parkingEvent = ae;
@@ -298,7 +298,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			// set parking button visible
 			mButtonParking.setVisibility(View.VISIBLE);
 //			ActionEvent parkingEvent = null;
-//			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+//			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 //			for(ActionEvent ae : parkingList){
 //				if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
 //					parkingEvent = ae;
@@ -415,7 +415,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				listMode.add(listMode.size() - 1, m);
 			}
 		}
-		ArrayAdapter<String> dataAdapterMode = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterMode = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listMode);
 		int modeListSelectionOffset = 0;
 		if((!TextUtils.isEmpty(mNewTravelMode)) && (listMode != null) && (!listMode.isEmpty())){
@@ -439,7 +439,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		// hard-code for person
 		String[] arrayPerson = {"1", "2", "3", "4", "5", "6", "7", "8"};
 		ArrayList<String> listPerson = new ArrayList<String>(Arrays.asList(arrayPerson));
-		ArrayAdapter<String> dataAdapterPerson = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterPerson = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listPerson);
 		mSpinnerModePerson.setAdapter(dataAdapterPerson);
 	}
@@ -466,7 +466,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				}
 			}
 		}
-		ArrayAdapter<String> dataAdapterReason = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterReason = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listReason);
 		mSpinnerReason.setAdapter(dataAdapterReason);
 		if(reasonListSelectionOffset > 0){
@@ -499,7 +499,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				}
 			}
 		}
-		ArrayAdapter<String> dataAdapterDestination = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterDestination = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listDestination);
 		mSpinnerDestination.setAdapter(dataAdapterDestination);		
 		if(desListSelectionOffset > 0){
@@ -521,7 +521,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				listPurpose.add(listPurpose.size() - 1, m);
 			}
 		}
-		ArrayAdapter<String> dataAdapterPurpose = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterPurpose = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listPurpose);
 		int purposeListSelectionOffset = 0;
 		if((!TextUtils.isEmpty(mNewTravelPurpose)) && (listPurpose != null) && (!listPurpose.isEmpty())){
@@ -607,7 +607,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			default:
 				return;
 		}
-		TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+		TextHelper.hideSoftInput(getSupportActivity().getApplicationContext(), mEditTextNote);
 	}
 
 	@Override
@@ -665,7 +665,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 						resetSpinner(arg);
 					}
 				});
-				csid.show(getFragmentManager(), "CustomSubjectItem");				
+				csid.show(getFragmentManager());				
 			}
 		}
 	}
@@ -734,7 +734,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		if(mStatus == TravelStatus.IDLE){
 			ActionEvent ae = new ActionEvent(getString(R.string.travel), System.currentTimeMillis());
 			ae.setState(EventState.START);
-			ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), ae);	
+			ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), ae);	
 			final String payload = ae.getMessagePayload();
 			if(!TextUtils.isEmpty(payload)){
 				Intent i = new Intent();
@@ -750,13 +750,13 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				break;
 			case STOP:
 				// mode
-				ArrayList<ActionEvent> stopList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+				ArrayList<ActionEvent> stopList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 				for(ActionEvent ae : stopList){
 					// parking event will not stop here
 					if(!getString(R.string.travel_parking).equals(ae.getActionEventName())){
 						ae.confirmBreakTimestamp();
 						ae.setState(EventState.STOP);
-						ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
+						ActionEventHandler.getInstance().update(getSupportActivity().getApplicationContext(), ae);
 						notifyEvent(ae.getMessagePayload(), null);						
 					}
 				} 
@@ -765,13 +765,13 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				break;
 			case PAUSE:
 				// mode
-				ArrayList<ActionEvent> pauseList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+				ArrayList<ActionEvent> pauseList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 				for(ActionEvent ae : pauseList){
 					if((!getString(R.string.travel).equals(ae.getActionEventName()))
 						&& (!getString(R.string.travel_parking).equals(ae.getActionEventName()))){
 						ae.confirmBreakTimestamp();
 						ae.setState(EventState.STOP);
-						ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
+						ActionEventHandler.getInstance().update(getSupportActivity().getApplicationContext(), ae);
 						notifyEvent(ae.getMessagePayload(), null);
 					}
 				} 					
@@ -783,7 +783,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				if(!TextUtils.isEmpty(mCurrentMode)){
 					ActionEvent ae = new ActionEvent(mCurrentMode, System.currentTimeMillis());
 					ae.setState(EventState.START);
-					ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), ae);	
+					ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), ae);	
 
 					
 					HashMap<String, String> userMsg = new HashMap<String,String>();
@@ -868,7 +868,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 
 	private void updateMenuItem(Menu menu){
 		MenuItem item = menu.findItem(R.id.menu_travel_toggle_service);
-		if(MainPipeline.isEnabled(getSherlockActivity().getApplicationContext())){
+		if(MainPipeline.isEnabled(getSupportActivity().getApplicationContext())){
 			item.setTitle(R.string.travel_stop_logging);			
 		}else {
 			item.setTitle(R.string.travel_start_logging);
@@ -900,7 +900,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				public void onCancel() {
 				}
 			});
-			aqd.show(getFragmentManager(), "QuitApp");
+			aqd.show(getFragmentManager());
 			return true;
 		}else if(itemId == R.id.menu_travel_toggle_service){
 			if(mLoggerSwitch != null){
@@ -909,6 +909,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 			return true;
 		} else if(itemId == R.id.menu_travel_cheating){
 			toggleCheatingMode();
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -918,22 +919,18 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		toggleCheatingText(!cheat);
 		mApp.saveCheatingMode(!cheat);
 	}
-	
+
 	private void toggleCheatingText(final boolean cheat){
-		final ActionBar actionBar = getSherlockActivity().getSupportActionBar();
+		final ActionBar actionBar = getSupportActivity().getSupportActionBar();
 		if(actionBar != null){
-			if(cheat){
-				actionBar.setSubtitle("Cheating ON");
-			}else{
-				actionBar.setSubtitle("");
-			}			
+			actionBar.setSubtitle(cheat ? "Cheating ON": "");
 		}
 	}
 	
 	private void exportData(){
-		Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+		Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
 		archiveIntent.setAction(MainPipeline.ACTION_ARCHIVE_DATA);
-		getSherlockActivity().startService(archiveIntent);
+		getSupportActivity().startService(archiveIntent);
 	}
 
 	@Override
@@ -960,14 +957,14 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		notifyTravelingEvent(TravelStatus.STOP);
 		stopService();
 		mApp.saveTravelStauts(mStatus.ordinal());
-		getSherlockActivity().finish();
+		getSupportActivity().finish();
 	}
 	
 	private void startService(){
 		if(!mIsRunning){
-			Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+			Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
 			archiveIntent.setAction(MainPipeline.ACTION_ENABLE);
-			getSherlockActivity().startService(archiveIntent);	
+			getSupportActivity().startService(archiveIntent);	
 			mIsRunning = true;
 		}
 		mStatus = TravelStatus.IDLE;
@@ -975,9 +972,9 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 	}
 	
 	private void stopService(){
-		Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+		Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
 		archiveIntent.setAction(MainPipeline.ACTION_DISABLE);
-		getSherlockActivity().startService(archiveIntent);
+		getSupportActivity().startService(archiveIntent);
 		mIsRunning  = false;
 		refreshUI();
 	}
@@ -987,9 +984,9 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		mButtonSaveNote.setEnabled(false);
 		if(TextUtils.isEmpty(note)) return;
 		mEditTextNote.setText("");
-		TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+		TextHelper.hideSoftInput(getSupportActivity().getApplicationContext(), mEditTextNote);
 		mEditTextNote.setInputType(InputType.TYPE_NULL);
-		ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), 
+		ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), 
 								new ActionEvent("USER_NOTE", System.currentTimeMillis(), note, true));
 		Intent intent = new Intent();
 		intent.setAction(CUSTOM_INTENT_ACTION);
@@ -1006,7 +1003,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 	    	builder.setTitle(R.string.app_travel_quit_title);
 	    	builder.setIcon(android.R.drawable.ic_dialog_info);
 	    	builder.setMessage(R.string.app_travel_quit_content);
@@ -1040,7 +1037,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 		
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
+			AlertDialog.Builder builder = new AlertDialog.Builder(getSupportActivity());
 	    	builder.setIcon(android.R.drawable.ic_dialog_info);
 			switch(mCustomSubject){
 				case MODE:
@@ -1058,7 +1055,7 @@ public class TravelPanelFragement extends SherlockFragment implements OnClickLis
 				default:
 					return null;
 			}
-	    	LayoutInflater inflater = LayoutInflater.from(getSherlockActivity());
+	    	LayoutInflater inflater = LayoutInflater.from(getSupportActivity());
 	    	final View noteView = inflater.inflate(R.layout.custom_item_dialog, null);
 	    	final EditText travelItemContent = (EditText)noteView.findViewById(R.id.edit_text_travel_item);
 	    	builder.setView(noteView);

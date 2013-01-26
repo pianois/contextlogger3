@@ -27,7 +27,7 @@
 -->
 <resources>
     <string name="travel_app_name">Travel Diary</string>
-    <string name="travel_service_status">Travel logging status:</string>
+    <string name="travel_service_status">Travel logging status:</string>   
     <string name="travel_service_running">Running</string>
     <string name="travel_service_stopped">Stopped</string>
     <string name="travel_mode_of_transport">Mode of transport</string>    

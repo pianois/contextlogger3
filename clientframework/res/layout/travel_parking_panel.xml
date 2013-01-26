@@ -49,7 +49,7 @@
 		   	android:layout_marginRight="5dp"		
 			/>  		        
 	       
-		<com.WazaBe.HoloEverywhere.widget.Spinner 
+		<org.holoeverywhere.widget.Spinner 
 			android:id="@+id/spinner_travel_parking_place_list"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -70,7 +70,7 @@
 		   	android:layout_marginRight="5dp"		
 			/>  		        
 			       
-		<com.WazaBe.HoloEverywhere.widget.Spinner 
+		<org.holoeverywhere.widget.Spinner 
 			android:id="@+id/spinner_travel_parking_price_list"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -90,7 +90,7 @@
 		   	android:layout_marginRight="5dp"		
 			/>  
 				
-		<com.WazaBe.HoloEverywhere.widget.Spinner 
+		<org.holoeverywhere.widget.Spinner 
 			android:id="@+id/spinner_travel_parking_payment_list"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"

@@ -31,6 +31,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.holoeverywhere.LayoutInflater;
+import org.holoeverywhere.app.AlertDialog;
+import org.holoeverywhere.app.Dialog;
+import org.holoeverywhere.app.ListFragment;
+import org.holoeverywhere.widget.AdapterView;
+import org.holoeverywhere.widget.AdapterView.OnItemSelectedListener;
+import org.holoeverywhere.widget.Button;
+import org.holoeverywhere.widget.EditText;
+import org.holoeverywhere.widget.Spinner;
+import org.holoeverywhere.widget.Switch;
 import org.json.JSONException;
 import org.sizzlelab.contextlogger.android.LoggerPanelFragment.ActivityNamingDialog.ActivityNamingListener;
 import org.sizzlelab.contextlogger.android.MainActivity.OnContextLoggerStatusChangeListener;
@@ -42,9 +52,6 @@ import org.sizzlelab.contextlogger.android.utils.Constants;
 import org.sizzlelab.contextlogger.android.widget.adapter.ActivityEventListAdapter;
 import org.sizzlelab.contextlogger.android.widget.adapter.ActivityEventListAdapter.OnActivityEventUpdateListener;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -53,9 +60,7 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -66,13 +71,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
-import com.WazaBe.HoloEverywhere.widget.AdapterView;
-import com.WazaBe.HoloEverywhere.widget.AdapterView.OnItemSelectedListener;
-import com.WazaBe.HoloEverywhere.widget.Button;
-import com.WazaBe.HoloEverywhere.widget.EditText;
-import com.WazaBe.HoloEverywhere.widget.Spinner;
-import com.WazaBe.HoloEverywhere.widget.Switch;
-import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.internal.widget.IcsAdapterView.AdapterContextMenuInfo;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -82,7 +81,7 @@ import fi.aalto.chaow.android.app.BaseAlertDialog.AlertDialogListener;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
 import fi.aalto.chaow.android.utils.TextHelper;
 
-public class LoggerPanelFragment extends SherlockListFragment implements OnClickListener, Constants, OnContextLoggerStatusChangeListener,
+public class LoggerPanelFragment extends ListFragment implements OnClickListener, Constants, OnContextLoggerStatusChangeListener,
 																				OnCheckedChangeListener, OnActivityEventUpdateListener,
 																				OnItemSelectedListener {
 	private Handler mHandler = new Handler();
@@ -127,7 +126,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	}
 	
 	@Override
-	public void onAttach(Activity activity) {
+	public void onAttach(org.holoeverywhere.app.Activity activity) {
 		super.onAttach(activity);
 		mListener = (OnSupportFragmentListener) activity;
 	}
@@ -136,9 +135,9 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+		Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
 		archiveIntent.setAction(MainPipeline.ACTION_ENABLE);
-		getSherlockActivity().startService(archiveIntent);	
+		getActivity().startService(archiveIntent);	
 		mIsRunning = true;
 	}
 	
@@ -162,12 +161,12 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				if(!mIsRunning) {
-					TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+					TextHelper.hideSoftInput(getSupportActivity().getApplicationContext(), mEditTextNote);
 					return true;
 				}
 				mEditTextNote.setInputType(InputType.TYPE_CLASS_TEXT);
 				mEditTextNote.requestFocus();
-				TextHelper.showSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+				TextHelper.showSoftInput(getSupportActivity().getApplicationContext(), mEditTextNote);
 				return true;
 			}
 		});
@@ -186,7 +185,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 		});
 		updateUI();
 		mTextViewStatus.requestFocus();
-		mLoggerSwitch = (Switch)getSherlockActivity().getSupportActionBar().getCustomView().findViewById(R.id.logger_switcher);
+		mLoggerSwitch = (Switch)getSupportActivity().getSupportActionBar().getCustomView().findViewById(R.id.logger_switcher);
 		return view;
 	}
 
@@ -221,7 +220,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 			mAdapter = null;
 			mActionEventList.clear();
 		}
-		mActionEventList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+		mActionEventList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 		if(mActionEventList.isEmpty()){
 			mNoData.setVisibility(View.VISIBLE);
 		} else{
@@ -235,7 +234,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
     		mShownContent.add(data);
 		}
 
-		mAdapter = new ActivityEventListAdapter(getSherlockActivity(), mShownContent, R.layout.event_list_item,
+		mAdapter = new ActivityEventListAdapter(getSupportActivity(), mShownContent, R.layout.event_list_item,
 												new String[]{"DateTime", "Event" , "Duration"},
 												new int[]{R.id.text_view_event_start_datetime, R.id.text_view_event_tag_name,
 												R.id.text_view_event_duration, R.id.image_button_activity_stop}, this);
@@ -270,7 +269,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 				list.add(str);
 			}
 		}
-		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 															R.layout.spinner_item, list);
 		mSpinner.setAdapter(dataAdapter);
 		final String firstTag = list.get(0);
@@ -284,9 +283,9 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 
 	private void startService(){
 		if(!mIsRunning){
-			Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+			Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
 			archiveIntent.setAction(MainPipeline.ACTION_ENABLE);
-			getSherlockActivity().startService(archiveIntent);	
+			getSupportActivity().startService(archiveIntent);	
 			mIsRunning = true;
 		}
 		updateUI();
@@ -302,7 +301,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 		}else{
 			mTextViewStatus.setText(R.string.service_stopped);
 		}
-		mActionEventList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+		mActionEventList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 		for(ActionEvent ae : mActionEventList){
 			final String name = ae.getActionEventName();
 			if(!"USER_NOTE".equals(name)){
@@ -313,14 +312,14 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	
 	private void stopService(){
 		mTextViewStatus.setText(R.string.service_stopped);
-		Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+		Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
 		archiveIntent.setAction(MainPipeline.ACTION_DISABLE);
-		getSherlockActivity().startService(archiveIntent);
+		getSupportActivity().startService(archiveIntent);
 		mIsRunning  = false;
 		for(ActionEvent ae : mActionEventList){
 			ae.confirmBreakTimestamp();
 			ae.setState(EventState.STOP);
-			ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
+			ActionEventHandler.getInstance().update(getSupportActivity().getApplicationContext(), ae);
 		}
 		if(mSpinner != null){
 			mSpinner.setEnabled(false);
@@ -338,19 +337,8 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	}
 
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		if (v.getId() == android.R.id.list) {
-			android.view.MenuInflater inflater = getSherlockActivity().getMenuInflater();
-			inflater.inflate(R.menu.list_context_menu, menu);
-			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-		    menu.setHeaderTitle(mActionEventList.get(info.position).getActionEventName());
-		}
-	}
-	
-	@Override
-	public boolean onContextItemSelected(android.view.MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
 		ActionEvent ae = mActionEventList.get(info.position);
 		final int itemId = item.getItemId();
 		if(R.id.context_menu_stop == itemId){
@@ -365,11 +353,22 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 			}
 		}
 		ae.confirmBreakTimestamp();
-		ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
+		ActionEventHandler.getInstance().update(getSupportActivity().getApplicationContext(), ae);
 		notifyEvent(ae);
 		updateEventList();
 		refreshSpinner();
 		return true;
+	}
+
+	@Override
+	public void onCreateContextMenu(com.actionbarsherlock.view.ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		if (v.getId() == android.R.id.list) {
+			MenuInflater inflater = getSherlockActivity().getSupportMenuInflater();
+			inflater.inflate(R.menu.list_context_menu, menu);
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		    menu.setHeaderTitle(mActionEventList.get(info.position).getActionEventName());
+		}
 	}
 
 	@Override
@@ -386,7 +385,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 
 	private void updateMenuItem(Menu menu){
 		MenuItem item = menu.findItem(R.id.menu_toggle_service);
-		if(MainPipeline.isEnabled(getSherlockActivity().getApplicationContext())){
+		if(MainPipeline.isEnabled(getSupportActivity().getApplicationContext())){
 			item.setTitle(R.string.btn_stop_service);			
 		}else {
 			item.setTitle(R.string.btn_start_service);
@@ -437,7 +436,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 					refreshSpinner();
 				}
 			});
-			and.show(getFragmentManager(), "AddingNewActivityName"); 
+			and.show(getFragmentManager()); 
 			return true;
 		} else if (itemId == R.id.menu_export_data) {
 			exportData();
@@ -461,7 +460,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 				public void onCancel() {
 				}
 			});
-			aqd.show(getFragmentManager(), "QuitApp");
+			aqd.show(getFragmentManager());
 			return true;
 		}else if(itemId == R.id.menu_toggle_service){
 			if(mLoggerSwitch != null){
@@ -473,9 +472,9 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	}
    
 	private void exportData(){
-		Intent archiveIntent = new Intent(getSherlockActivity().getApplicationContext(), MainPipeline.class);
+		Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
 		archiveIntent.setAction(MainPipeline.ACTION_ARCHIVE_DATA);
-		getSherlockActivity().startService(archiveIntent);
+		getSupportActivity().startService(archiveIntent);
 	}
 	
 	private void quitApp(){
@@ -483,7 +482,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 			mLoggerSwitch.setChecked(false);
 		} 
 		stopService();
-		getSherlockActivity().finish();
+		getSupportActivity().finish();
 	}
 	
 	@Override
@@ -505,23 +504,23 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 	private void saveNote(){
 		final String note = mEditTextNote.getText().toString();
 		mEditTextNote.setText("");
-		TextHelper.hideSoftInput(getSherlockActivity().getApplicationContext(), mEditTextNote);
+		TextHelper.hideSoftInput(getSupportActivity().getApplicationContext(), mEditTextNote);
 		mEditTextNote.setInputType(InputType.TYPE_NULL);
 		mButtonSaveNote.setEnabled(false);
-		ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), 
+		ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), 
 								new ActionEvent("USER_NOTE", System.currentTimeMillis(), note, true));
 		Intent intent = new Intent();
 		intent.setAction(CUSTOM_INTENT_ACTION);
 		intent.putExtra("APPLICATION_ACTION", "USER_NOTE");
 		intent.putExtra("APPLICATION_DATA", note);
-		getSherlockActivity().sendBroadcast(intent);
+		getSupportActivity().sendBroadcast(intent);
 	}
 	
 	private void startEvent(){
 		if(!TextUtils.isEmpty(mCurrentTag)){
 			ActionEvent ae = new ActionEvent(mCurrentTag, System.currentTimeMillis());
 			ae.setState(EventState.START);
-			ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), ae);
+			ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), ae);
 			mButtonStartActivity.setEnabled(false);
 			notifyEvent(ae);
 			updateEventList();
@@ -535,7 +534,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 			Intent i = new Intent();
 			i.setAction(CUSTOM_INTENT_ACTION);
 			i.putExtra("APPLICATION_ACTION", payload);
-			getSherlockActivity().sendBroadcast(i);
+			getSupportActivity().sendBroadcast(i);
 		} else {
 			ClientApp.getInstance().showToastMessage("Client error!");
 		}
@@ -584,7 +583,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 			}
 		}
 		ae.confirmBreakTimestamp();
-		ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
+		ActionEventHandler.getInstance().update(getSupportActivity().getApplicationContext(), ae);
 		notifyEvent(ae);
 		updateEventList();
 		refreshSpinner();
@@ -606,7 +605,7 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
+			AlertDialog.Builder builder = new AlertDialog.Builder(getSupportActivity());
 	    	builder.setTitle(R.string.app_quit_title);
 	    	builder.setIcon(android.R.drawable.ic_dialog_info);
 	    	builder.setMessage(R.string.app_quit_content);
@@ -637,11 +636,11 @@ public class LoggerPanelFragment extends SherlockListFragment implements OnClick
 		}
 		
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
+		public Dialog onCreateDialog(Bundle savedInstanceState) { 
+			AlertDialog.Builder builder = new AlertDialog.Builder(getSupportActivity());
 	    	builder.setIcon(android.R.drawable.ic_dialog_info);
 	    	builder.setTitle(R.string.add_tag_dialog_title);
-		  	LayoutInflater inflater = LayoutInflater.from(getSherlockActivity());
+		  	LayoutInflater inflater = LayoutInflater.from(getSupportActivity());
 		  	final View noteView = inflater.inflate(R.layout.add_tag_dialog, null);
 		  	final EditText tagContent = (EditText)noteView.findViewById(R.id.edit_text_tag);
 		  	builder.setTitle(R.string.add_tag);

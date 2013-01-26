@@ -24,11 +24,11 @@
  */
 package fi.aalto.chaow.android.app;
 
+import org.holoeverywhere.app.DialogFragment;
+
 import android.content.DialogInterface;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-
-public class BaseAlertDialog extends SherlockDialogFragment {
+public class BaseAlertDialog extends DialogFragment {
 
 	private AlertDialogListener mListener = null;
 

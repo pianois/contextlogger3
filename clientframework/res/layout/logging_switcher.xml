@@ -32,7 +32,7 @@
     android:orientation="vertical" 
     >
 
-	<com.WazaBe.HoloEverywhere.widget.Switch
+	<org.holoeverywhere.widget.Switch
       	android:id="@+id/logger_switcher"
       	android:gravity="center"
       	android:layout_gravity="center"

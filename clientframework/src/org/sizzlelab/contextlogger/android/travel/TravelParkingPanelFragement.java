@@ -4,6 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.holoeverywhere.LayoutInflater;
+import org.holoeverywhere.app.AlertDialog;
+import org.holoeverywhere.app.Dialog;
+import org.holoeverywhere.app.Fragment;
+import org.holoeverywhere.widget.AdapterView;
+import org.holoeverywhere.widget.AdapterView.OnItemSelectedListener;
+import org.holoeverywhere.widget.EditText;
+import org.holoeverywhere.widget.Spinner;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sizzlelab.contextlogger.android.R;
@@ -13,37 +21,27 @@ import org.sizzlelab.contextlogger.android.model.handler.ActionEventHandler;
 import org.sizzlelab.contextlogger.android.travel.TravelParkingPanelFragement.ParkingCustomSubjectItemDialog.ParkingCustomSubjectItemListener;
 import org.sizzlelab.contextlogger.android.utils.Constants;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
-import com.WazaBe.HoloEverywhere.widget.AdapterView;
-import com.WazaBe.HoloEverywhere.widget.AdapterView.OnItemSelectedListener;
-import com.WazaBe.HoloEverywhere.widget.EditText;
-import com.WazaBe.HoloEverywhere.widget.Spinner;
-import com.actionbarsherlock.app.SherlockFragment;
-
 import fi.aalto.chaow.android.app.BaseAlertDialog;
 import fi.aalto.chaow.android.app.BaseAlertDialog.AlertDialogListener;
 
-public class TravelParkingPanelFragement extends SherlockFragment implements OnClickListener, OnItemSelectedListener, Constants{
+public class TravelParkingPanelFragement extends Fragment implements OnClickListener, OnItemSelectedListener, Constants{
 
 	private Handler mHandler = new Handler();
 	private Runnable mTimedTask = new Runnable(){
 		@Override
 		public void run() {
-			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 			for(ActionEvent ae : parkingList){
 				if(TravelApp.getInstance().getString(R.string.travel_parking).equals(ae.getActionEventName())){
 					if(mTextViewParkingDuration != null){
@@ -144,7 +142,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 	
 	private void refreshUI(){
 		ActionEvent parking = null;
-		ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+		ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 		for(ActionEvent ae : parkingList){
 			if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
 				parking = ae;
@@ -224,7 +222,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				listPrice.add(listPrice.size() - 1, m);
 			}
 		}
-		ArrayAdapter<String> dataAdapterPlace = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterPlace = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listPrice);
 		int priceListSelectionOffset = 0;
 		if((!TextUtils.isEmpty(mNewPrice)) && (listPrice != null) && (!listPrice.isEmpty())){
@@ -256,7 +254,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				listPlace.add(listPlace.size() - 1, m);
 			}
 		}
-		ArrayAdapter<String> dataAdapterPlace = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterPlace = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listPlace);
 		int placeListSelectionOffset = 0;
 		if((!TextUtils.isEmpty(mNewPlace)) && (listPlace != null) && (!listPlace.isEmpty())){
@@ -288,7 +286,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				listPayment.add(listPayment.size() - 1, m);
 			}
 		}
-		ArrayAdapter<String> dataAdapterPayment = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterPayment = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listPayment);
 		int paymentListSelectionOffset = 0;
 		if((!TextUtils.isEmpty(mNewPayment)) && (listPayment != null) && (!listPayment.isEmpty())){
@@ -321,7 +319,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				listMode.add(listMode.size() - 1, m);
 			}
 		}
-		ArrayAdapter<String> dataAdapterMode = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterMode = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listMode);
 		int modeListSelectionOffset = 0;
 		if((!TextUtils.isEmpty(mNewMode)) && (listMode != null) && (!listMode.isEmpty())){
@@ -345,7 +343,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		// hard-code for person
 		String[] arrayPerson = {"1", "2", "3", "4", "5", "6", "7", "8"};
 		ArrayList<String> listPerson = new ArrayList<String>(Arrays.asList(arrayPerson));
-		ArrayAdapter<String> dataAdapterPerson = new ArrayAdapter<String>(getSherlockActivity().getApplicationContext(),
+		ArrayAdapter<String> dataAdapterPerson = new ArrayAdapter<String>(getSupportActivity().getApplicationContext(),
 				R.layout.spinner_item, listPerson);
 		mSpinnerModePerson.setAdapter(dataAdapterPerson);
 	}
@@ -406,7 +404,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 						resetSpinner(arg);
 					}
 				});
-				pcsid.show(getFragmentManager(), "ParkingCustomSubjectItem");				
+				pcsid.show(getFragmentManager());				
 			}
 		}
 	}
@@ -506,7 +504,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		toggleUIComponent(false);
 		ActionEvent ae = new ActionEvent(getString(R.string.travel_parking), System.currentTimeMillis());
 		ae.setState(EventState.START);
-		ActionEventHandler.getInstance().insert(getSherlockActivity().getApplicationContext(), ae);	
+		ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), ae);	
 
 		HashMap<String, String> userMsg = new HashMap<String,String>();
 		
@@ -580,12 +578,12 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 	
 	private void stopParkingEvent(){
 		toggleUIComponent(false);
-		ArrayList<ActionEvent> stopList = ActionEventHandler.getInstance().getAllItems(getSherlockActivity().getApplicationContext(), false);
+		ArrayList<ActionEvent> stopList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 		for(ActionEvent ae : stopList){
 			if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
 				ae.confirmBreakTimestamp();
 				ae.setState(EventState.STOP);
-				ActionEventHandler.getInstance().update(getSherlockActivity().getApplicationContext(), ae);
+				ActionEventHandler.getInstance().update(getSupportActivity().getApplicationContext(), ae);
 				HashMap<String, String> userMsg = new HashMap<String,String>();
 				fetchParkingPaymentPrice(userMsg, true);
 				notifyEvent(ae.getMessagePayload(), userMsg);
@@ -594,7 +592,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 			}
 		} 
 		// pop up this out of the stack
-		getSherlockActivity().getSupportFragmentManager().popBackStack();
+		getSupportActivity().getSupportFragmentManager().popBackStack();
 	}
 	
 	private void sendEventBoradcast(final Intent intent){
@@ -614,7 +612,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 		
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
+			AlertDialog.Builder builder = new AlertDialog.Builder(getSupportActivity());
 	    	builder.setIcon(android.R.drawable.ic_dialog_info);
 			switch(mSubject){
 				case MODE:
@@ -632,7 +630,7 @@ public class TravelParkingPanelFragement extends SherlockFragment implements OnC
 				default:
 					return null;
 			}
-	    	LayoutInflater inflater = LayoutInflater.from(getSherlockActivity());
+	    	LayoutInflater inflater = LayoutInflater.from(getSupportActivity());
 	    	final View noteView = inflater.inflate(R.layout.custom_item_dialog, null);
 	    	final EditText travelItemContent = (EditText)noteView.findViewById(R.id.edit_text_travel_item);
 	    	builder.setView(noteView);

@@ -25,6 +25,7 @@
  */
 package org.sizzlelab.contextlogger.android;
 
+import org.holoeverywhere.widget.Switch;
 import org.sizzlelab.contextlogger.android.io.MainPipeline;
 import org.sizzlelab.contextlogger.android.utils.Constants;
 
@@ -34,14 +35,12 @@ import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
-import com.WazaBe.HoloEverywhere.widget.Switch;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuItem;
 
@@ -107,23 +106,23 @@ public class MainActivity extends BaseFragmentActivity implements OnSupportFragm
 	public void onFragmentChanged(int layoutResId, Bundle args) {
 		FragmentTransaction transaction = getSupportFragmentTransaction();
 
-		ListFragment listFragment = null;
+		Fragment fragment = null;
 		
 		if(layoutResId == R.layout.logger_history){
-			listFragment = new LoggerHistoryFragment();
+			fragment = new LoggerHistoryFragment();
 		}
 		
-		if(listFragment != null){
+		if(fragment != null){
 			if(args != null){
-				listFragment.setArguments(args);
+				fragment.setArguments(args);
 			}
 
-			if(listFragment instanceof LoggerHistoryFragment){
-				transaction.replace(R.id.screen_container, listFragment, "loggerHistory"); 
+			if(fragment instanceof LoggerHistoryFragment){
+				transaction.replace(R.id.screen_container, fragment, "loggerHistory"); 
 				constructActionbar();
 			}
 			// Add to this transaction into BackStack
-			transaction.addToBackStack(listFragment.getTag());
+			transaction.addToBackStack(fragment.getTag());
 			
 			transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			// Commit this transaction

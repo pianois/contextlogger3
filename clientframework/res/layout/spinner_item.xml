@@ -33,9 +33,9 @@
     android:minWidth="50dp"
     android:maxWidth="200dp"
     android:textSize="20sp"
+    android:textColor="@android:color/black"
     android:gravity="left|center_vertical"
-    android:singleLine="false"
-    android:textColor="#FFFFFF"         
+    android:singleLine="false"      
     android:padding="5dp"
     android:ellipsize="marquee"
 	/>

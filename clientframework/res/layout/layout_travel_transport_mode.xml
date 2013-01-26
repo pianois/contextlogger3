@@ -47,7 +47,7 @@
 			android:textSize="16sp"
 			/>  		        
         
-		<com.WazaBe.HoloEverywhere.widget.Spinner 
+		<org.holoeverywhere.widget.Spinner 
 			android:id="@+id/spinner_travel_transport_mode_list"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
 			android:textSize="16sp"
 			/>  		        		        
         
-		<com.WazaBe.HoloEverywhere.widget.Spinner 
+		<org.holoeverywhere.widget.Spinner 
 			android:id="@+id/spinner_travel_transport_mode_person_list"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"

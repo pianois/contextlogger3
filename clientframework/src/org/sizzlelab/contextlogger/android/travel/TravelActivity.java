@@ -25,6 +25,7 @@
  */
 package org.sizzlelab.contextlogger.android.travel;
 
+import org.holoeverywhere.widget.Switch;
 import org.sizzlelab.contextlogger.android.LoggerHistoryFragment;
 import org.sizzlelab.contextlogger.android.R;
 import org.sizzlelab.contextlogger.android.io.MainPipeline;
@@ -43,12 +44,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
-import com.WazaBe.HoloEverywhere.widget.Switch;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuItem;
 
 import fi.aalto.chaow.android.app.BaseFragmentActivity;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
+
 
 public class TravelActivity extends BaseFragmentActivity implements OnSupportFragmentListener, OnBackStackChangedListener,
 														Constants, OnSharedPreferenceChangeListener{

@@ -31,13 +31,13 @@
     android:layout_margin="10dp"
     android:orientation="vertical" >
 
-    <com.WazaBe.HoloEverywhere.widget.EditText 
+    <org.holoeverywhere.widget.EditText 
         android:id="@+id/edit_text_travel_item"
     	android:layout_width="match_parent"
     	android:layout_height="wrap_content"  
     	android:minHeight="50dp"      
         android:singleLine="true"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         android:hint="@string/travel_custom_item_hint"
         />
     
