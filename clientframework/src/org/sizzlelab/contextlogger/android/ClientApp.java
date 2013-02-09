@@ -97,13 +97,13 @@ public class ClientApp extends Application{
 			}
 			jsonString = w.toString();
 		} catch (IOException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}finally{
 			if(is != null){
 				try {
 					is.close();
 				} catch (IOException e) {
-					throw new IOException(e);
+					throw new IOException(e.getMessage());
 				}
 			}
 		}

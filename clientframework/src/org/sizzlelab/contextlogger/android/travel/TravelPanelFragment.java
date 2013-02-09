@@ -31,9 +31,6 @@ import java.util.HashMap;
 
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.app.Dialog;
-import org.holoeverywhere.app.Fragment;
 import org.holoeverywhere.widget.AdapterView;
 import org.holoeverywhere.widget.AdapterView.OnItemSelectedListener;
 import org.holoeverywhere.widget.Button;
@@ -47,17 +44,16 @@ import org.sizzlelab.contextlogger.android.io.MainPipeline;
 import org.sizzlelab.contextlogger.android.model.ActionEvent;
 import org.sizzlelab.contextlogger.android.model.EventState;
 import org.sizzlelab.contextlogger.android.model.handler.ActionEventHandler;
-import org.sizzlelab.contextlogger.android.travel.TravelPanelFragement.CustomSubjectItemDialog.CustomSubjectItemListener;
-import org.sizzlelab.contextlogger.android.utils.Constants;
+import org.sizzlelab.contextlogger.android.travel.TravelCustomSubjectFragmentDialog.CustomSubject;
+import org.sizzlelab.contextlogger.android.travel.TravelCustomSubjectFragmentDialog.TravelCustomSubjectListener;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -74,19 +70,18 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-import fi.aalto.chaow.android.app.BaseAlertDialog;
 import fi.aalto.chaow.android.app.BaseAlertDialog.AlertDialogListener;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
 import fi.aalto.chaow.android.utils.TextHelper;
 
-public class TravelPanelFragement extends Fragment implements OnClickListener, Constants, OnCheckedChangeListener, 
+public class TravelPanelFragment extends AbstractTravelCommonFragment implements OnClickListener, OnCheckedChangeListener, 
 																						OnItemSelectedListener{
 
 	private Handler mHandler = new Handler();
 	private Runnable mTimedTask = new Runnable(){
 		@Override
 		public void run() {
-			ArrayList<ActionEvent> travelList = ActionEventHandler.getInstance().getAllItems(getActivity().getApplicationContext(), false);
+			ArrayList<ActionEvent> travelList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
 			for(ActionEvent ae : travelList){
 				if(TravelApp.getInstance().getString(R.string.travel).equals(ae.getActionEventName())){
 					if(mTextViewDuration != null){
@@ -97,20 +92,6 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 			mHandler.postDelayed(mTimedTask , 500);				
 		}
 	};
-	
-	private enum CustomSubject{
-		UNKONWN, MODE, REASON, PURPOSE, DESTINATION
-	}
-	
-	private enum TravelStatus{
-		IDLE, MOVING, PAUSE, STOP;
-		public static TravelStatus getTravelStatus(final int index) throws IndexOutOfBoundsException{
-			if(index < 0 || index > (TravelStatus.values()).length){
-				throw new IndexOutOfBoundsException();
-			}
-			return TravelStatus.values()[index];
-		}
-	}
 	
 	private OnSupportFragmentListener mListener = null;
 	
@@ -132,8 +113,6 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 	private TextView mTextViewDuration = null;
 	private TextView mTextViewStatus = null;
 	
-	private Switch mLoggerSwitch = null;
-	
 	private String mNewTravelMode = null;
 	private String mNewTravelReason = null;
 	private String mNewTravelPurpose = null;
@@ -151,22 +130,35 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 	private EditText mEditTextNote = null;
 	private Button mButtonSaveNote = null;
 
-	public TravelPanelFragement(){
+	private View mSwitcherView = null;
+	private Switch mSwitch = null;
+	
+	public TravelPanelFragment(){
 	}
 	
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		mListener = (OnSupportFragmentListener) activity;
+		
+        mSwitcherView = getLayoutInflater().inflate(R.layout.logging_switcher, null);
+        mSwitch = (Switch) mSwitcherView.findViewById(R.id.logger_switcher);
+        mSwitch.setTextOn(getString(R.string.start));
+        mSwitch.setTextOff(getString(R.string.stop));
+        final ActionBar.LayoutParams lp = new ActionBar.LayoutParams(
+					        		ViewGroup.LayoutParams.WRAP_CONTENT,
+					                ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.RIGHT|Gravity.CENTER_VERTICAL;
+        lp.setMargins(0, 0, 5, 0); 
+        activity.getSupportActionBar().setCustomView(mSwitcherView, lp);
+        mSwitch.setOnCheckedChangeListener(this);
 	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		Intent archiveIntent = new Intent(getActivity().getApplicationContext(), MainPipeline.class);
-		archiveIntent.setAction(MainPipeline.ACTION_ENABLE);
-		getSupportActivity().startService(archiveIntent);	
+		startLoggingService();
 		mIsRunning = true;
 		mApp = TravelApp.getInstance();
 	}
@@ -196,7 +188,6 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 		mViewNoTrip = view.findViewById(R.id.text_view_no_trip);
 		mViewTripContainer = view.findViewById(R.id.layout_trip_duration_container);
 		mTextViewDuration = (TextView)view.findViewById(R.id.text_view_travel_duration_value);
-		mLoggerSwitch = (Switch)getSupportActivity().getSupportActionBar().getCustomView().findViewById(R.id.logger_switcher);
 		mTextViewStatus = (TextView)view.findViewById(R.id.text_view_travel_service_state);
 		mEditTextNote = (EditText)view.findViewById(R.id.edit_text_travel_note);
 		mEditTextNote.setOnTouchListener(new OnTouchListener(){
@@ -297,19 +288,6 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 			invalidateUIComponents();
 			// set parking button visible
 			mButtonParking.setVisibility(View.VISIBLE);
-//			ActionEvent parkingEvent = null;
-//			ArrayList<ActionEvent> parkingList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
-//			for(ActionEvent ae : parkingList){
-//				if(getString(R.string.travel_parking).equals(ae.getActionEventName())){
-//					parkingEvent = ae;
-//					break;
-//				}
-//			}
-//			if((mStatus == TravelStatus.IDLE) || (parkingEvent == null)){
-//				mButtonParking.setVisibility(View.GONE);
-//			}else{
-//				mButtonParking.setVisibility(View.VISIBLE);
-//			}
 			if(mStatus == TravelStatus.MOVING){
 				mButtonPlay.setVisibility(View.GONE);
 				mButtonPause.setVisibility(View.VISIBLE);
@@ -380,17 +358,6 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 		}
 	}
 
-	private void fillSpinnerValue(final String value, final Spinner s){
-		if(TextUtils.isEmpty(value) || (s == null)) return;
-		for(int i = 0; i < s.getCount(); i++){
-			String item = s.getItemAtPosition(i).toString();
-			if((!TextUtils.isEmpty(item)) && value.equals(item)){
-				s.setSelection(i, false);
-				break;
-			}
-		}		
-	}
-	
 	private void toggleUIComponent(final boolean enable){
 		mButtonPause.setEnabled(enable);
 		mButtonStop.setEnabled(enable);
@@ -646,14 +613,14 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 				mCurrentPersonNumber = itemName;
 			}
 			if(isShown){
-				CustomSubjectItemDialog csid = new CustomSubjectItemDialog();
-				csid.config(new CustomSubjectItemListener (){
+				TravelCustomSubjectFragmentDialog tcsfd = new TravelCustomSubjectFragmentDialog();
+				tcsfd.config(new TravelCustomSubjectListener (){
 					@Override
 					public void OnTagNameInputCompleted(String itemName, CustomSubject subject) {
 						handleCustomeSubjectItem(itemName, subject);
 					}
 				}, cs);
-				csid.setAlertDialogListener(new AlertDialogListener(){
+				tcsfd.setAlertDialogListener(new AlertDialogListener(){
 					@Override
 					public void onPositiveClick() { }
 					@Override
@@ -665,7 +632,7 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 						resetSpinner(arg);
 					}
 				});
-				csid.show(getFragmentManager());				
+				tcsfd.show(getFragmentManager());				
 			}
 		}
 	}
@@ -705,21 +672,18 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 				notifyTravelingEvent(TravelStatus.PAUSE);
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
-//				mButtonParking.setVisibility(View.VISIBLE);
 			}else if(viewId == R.id.image_button_travel_play){
 				notifyTravelingEvent(TravelStatus.MOVING);
 				mViewNoTrip.setVisibility(View.GONE);
 				mViewTripContainer.setVisibility(View.VISIBLE);
 				mButtonPlay.setVisibility(View.GONE);
 				mButtonPause.setVisibility(View.VISIBLE);
-//				mButtonParking.setVisibility(View.GONE);
 			}else if(viewId == R.id.image_button_travel_stop){
 				notifyTravelingEvent(TravelStatus.STOP);
 				mViewNoTrip.setVisibility(View.VISIBLE);
 				mViewTripContainer.setVisibility(View.GONE);
 				mButtonPlay.setVisibility(View.VISIBLE);
 				mButtonPause.setVisibility(View.GONE);
-//				mButtonParking.setVisibility(View.GONE);
 				// clear data 
 				mApp.saveTravelSelectionInfo(null);
 				// rest spinners
@@ -737,10 +701,7 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 			ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), ae);	
 			final String payload = ae.getMessagePayload();
 			if(!TextUtils.isEmpty(payload)){
-				Intent i = new Intent();
-				i.setAction(CUSTOM_INTENT_ACTION);
-				i.putExtra("APPLICATION_ACTION", payload);
-				sendEventBoradcast(i);
+				sendEventBoradcast(payload, null);
 			} else {
 				mApp.showToastMessage(R.string.client_error);
 			}
@@ -784,7 +745,6 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 					ActionEvent ae = new ActionEvent(mCurrentMode, System.currentTimeMillis());
 					ae.setState(EventState.START);
 					ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), ae);	
-
 					
 					HashMap<String, String> userMsg = new HashMap<String,String>();
 
@@ -826,31 +786,7 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 
 				mStatus = TravelStatus.MOVING;
 				mTextViewDuration.setEnabled(true);
-//				if(mButtonParking.getVisibility() == View.GONE){
-//					mButtonParking.setVisibility(View.VISIBLE);
-//				}
 				break;
-		}
-	}
-	
-	private void notifyEvent(final String payload, HashMap<String, String> msg){
-		if(!TextUtils.isEmpty(payload)){
-			Intent intent = new Intent();
-			intent.setAction(CUSTOM_INTENT_ACTION);
-			intent.putExtra("APPLICATION_ACTION", payload);
-			if((msg != null) && (!msg.isEmpty())){
-				String appData = null;
-				try {
-					appData = TravelApp.getFormattedJsonObject(msg, "message").toString();				
-				}catch(Exception e){
-				}
-				if(!TextUtils.isEmpty(appData)){
-					intent.putExtra("APPLICATION_DATA", appData); 					
-				}
-			}
-			sendEventBoradcast(intent);
-		} else {
-			mApp.showToastMessage(R.string.client_error);
 		}
 	}
 
@@ -883,7 +819,7 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 			return true;
 		} else if (itemId == R.id.menu_travel_history) {
 			if(mListener != null){
-				mListener.onFragmentChanged(R.layout.logger_history, null);
+				mListener.onFragmentChanged(R.layout.travel_history, null);
 				return true;
 			}
 		} else if (itemId == R.id.menu_travel_shutdown) {
@@ -903,8 +839,8 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 			aqd.show(getFragmentManager());
 			return true;
 		}else if(itemId == R.id.menu_travel_toggle_service){
-			if(mLoggerSwitch != null){
-				mLoggerSwitch.setChecked(!mIsRunning);
+			if(mSwitch != null){
+				mSwitch.setChecked(!mIsRunning);
 			} 
 			return true;
 		} else if(itemId == R.id.menu_travel_cheating){
@@ -926,12 +862,6 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 			actionBar.setSubtitle(cheat ? "Cheating ON": "");
 		}
 	}
-	
-	private void exportData(){
-		Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
-		archiveIntent.setAction(MainPipeline.ACTION_ARCHIVE_DATA);
-		getSupportActivity().startService(archiveIntent);
-	}
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -951,8 +881,8 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 	}	
 	
 	private void quitApp(){
-		if(mLoggerSwitch != null){
-			mLoggerSwitch.setChecked(false);
+		if(mSwitch != null){
+			mSwitch.setChecked(false);
 		} 
 		notifyTravelingEvent(TravelStatus.STOP);
 		stopService();
@@ -962,9 +892,7 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 	
 	private void startService(){
 		if(!mIsRunning){
-			Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
-			archiveIntent.setAction(MainPipeline.ACTION_ENABLE);
-			getSupportActivity().startService(archiveIntent);	
+			startLoggingService();
 			mIsRunning = true;
 		}
 		mStatus = TravelStatus.IDLE;
@@ -972,9 +900,7 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 	}
 	
 	private void stopService(){
-		Intent archiveIntent = new Intent(getSupportActivity().getApplicationContext(), MainPipeline.class);
-		archiveIntent.setAction(MainPipeline.ACTION_DISABLE);
-		getSupportActivity().startService(archiveIntent);
+		stopLoggingService();
 		mIsRunning  = false;
 		refreshUI();
 	}
@@ -988,105 +914,7 @@ public class TravelPanelFragement extends Fragment implements OnClickListener, C
 		mEditTextNote.setInputType(InputType.TYPE_NULL);
 		ActionEventHandler.getInstance().insert(getSupportActivity().getApplicationContext(), 
 								new ActionEvent("USER_NOTE", System.currentTimeMillis(), note, true));
-		Intent intent = new Intent();
-		intent.setAction(CUSTOM_INTENT_ACTION);
-		intent.putExtra("APPLICATION_ACTION", "USER_NOTE");
-		intent.putExtra("APPLICATION_DATA", note);
-		sendEventBoradcast(intent);
-	}
-	
-	private void sendEventBoradcast(final Intent intent){
-		mApp.sendLoggingEventBoradcast(intent);
-	}
-	
-	public static class QuitAppDialog extends BaseAlertDialog{
-
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-	    	builder.setTitle(R.string.app_travel_quit_title);
-	    	builder.setIcon(android.R.drawable.ic_dialog_info);
-	    	builder.setMessage(R.string.app_travel_quit_content);
-	    	builder.setPositiveButton(R.string.ok, 
-	    			new DialogInterface.OnClickListener() {					
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							getDialogListener().onPositiveClick();
-						}
-					});
-	    	builder.setNegativeButton(R.string.cancel,     			
-	    			new DialogInterface.OnClickListener() {					
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							getDialogListener().onNegativeClick();
-						}
-					});				
-			return builder.create(); 
-		}
+		sendEventBoradcast("USER_NOTE", note);
 	}
 
-	public static class CustomSubjectItemDialog extends BaseAlertDialog {
-
-		private CustomSubjectItemListener mCustomSubjectItemListener = null;
-		private CustomSubject mCustomSubject = CustomSubject.UNKONWN;
-		
-		public void config(final CustomSubjectItemListener listener, CustomSubject subject){
-			mCustomSubjectItemListener = listener;
-			mCustomSubject = subject;
-		}
-		
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSupportActivity());
-	    	builder.setIcon(android.R.drawable.ic_dialog_info);
-			switch(mCustomSubject){
-				case MODE:
-			    	builder.setTitle(R.string.travel_mode_dialog);
-					break;
-				case PURPOSE:
-			    	builder.setTitle(R.string.travel_purpose_dialog);
-					break;
-				case REASON:
-			    	builder.setTitle(R.string.travel_reason_dialog);
-					break;
-				case DESTINATION:
-			    	builder.setTitle(R.string.travel_destination_dialog);					
-					break;					
-				default:
-					return null;
-			}
-	    	LayoutInflater inflater = LayoutInflater.from(getSupportActivity());
-	    	final View noteView = inflater.inflate(R.layout.custom_item_dialog, null);
-	    	final EditText travelItemContent = (EditText)noteView.findViewById(R.id.edit_text_travel_item);
-	    	builder.setView(noteView);
-	    	
-	    	builder.setPositiveButton(R.string.travel_save, 
-	    			new DialogInterface.OnClickListener() {					
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							final String itemName = travelItemContent.getEditableText().toString();
-							if(!TextUtils.isEmpty(itemName)){
-								if(mCustomSubjectItemListener != null){
-									mCustomSubjectItemListener.OnTagNameInputCompleted(itemName, mCustomSubject);
-								}
-							}else{
-								TravelApp.getInstance().showToastMessage(R.string.travel_custome_item_input_error);
-							}
-						}
-					});
-	    	builder.setNegativeButton(R.string.cancel,     			
-	    			new DialogInterface.OnClickListener() {					
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							getDialogListener().onNegativeClick();
-						}
-					});	    	
-			return builder.create();
-		}
-		
-		public static interface CustomSubjectItemListener{
-			void OnTagNameInputCompleted(final String itemName, final CustomSubject subject);
-		}
-		
-	}
 }

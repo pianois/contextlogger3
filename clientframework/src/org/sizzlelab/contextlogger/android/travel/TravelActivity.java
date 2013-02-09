@@ -25,11 +25,8 @@
  */
 package org.sizzlelab.contextlogger.android.travel;
 
-import org.holoeverywhere.widget.Switch;
-import org.sizzlelab.contextlogger.android.LoggerHistoryFragment;
 import org.sizzlelab.contextlogger.android.R;
 import org.sizzlelab.contextlogger.android.io.MainPipeline;
-import org.sizzlelab.contextlogger.android.utils.Constants;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -38,11 +35,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuItem;
@@ -50,19 +43,16 @@ import com.actionbarsherlock.view.MenuItem;
 import fi.aalto.chaow.android.app.BaseFragmentActivity;
 import fi.aalto.chaow.android.app.BaseFragmentActivity.OnSupportFragmentListener;
 
-// TODO rest Action bar when fragment changed
-public class TravelActivity extends BaseFragmentActivity implements OnSupportFragmentListener, OnBackStackChangedListener,
-														Constants, OnSharedPreferenceChangeListener{
+public class TravelActivity extends BaseFragmentActivity implements OnSupportFragmentListener, 
+												OnBackStackChangedListener, OnSharedPreferenceChangeListener{
 
 	private ActionBar mActionBar = null;
-	private Switch mSwitch = null;
-	private View mSwitcherView = null;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		getWindow().setFormat(PixelFormat.RGBA_8888); 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_act);
-		getWindow().setFormat(PixelFormat.RGBA_8888); 
 		// add back stack changed listener
 		getSupportFragmentManager().addOnBackStackChangedListener(this);
 		initUI();
@@ -73,27 +63,13 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 	    // Set up the action bar.
         mActionBar = getSupportActionBar();
         mActionBar.setDisplayShowTitleEnabled(true);
-        mActionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_USE_LOGO |ActionBar.DISPLAY_SHOW_TITLE);
+        mActionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | 
+        				ActionBar.DISPLAY_USE_LOGO | ActionBar.DISPLAY_SHOW_TITLE);
         mActionBar.setNavigationMode(ActionBar.DISPLAY_SHOW_CUSTOM);
         mActionBar.setHomeButtonEnabled(false);
         mActionBar.setDisplayShowCustomEnabled(true);
-        
-        mSwitcherView = getLayoutInflater().inflate(R.layout.logging_switcher, null);
-        mSwitch = (Switch) mSwitcherView.findViewById(R.id.logger_switcher);
-        mSwitch.setTextOn(getString(R.string.start));
-        mSwitch.setTextOff(getString(R.string.stop));
-        final ActionBar.LayoutParams lp = new ActionBar.LayoutParams(
-					        		ViewGroup.LayoutParams.WRAP_CONTENT,
-					                ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.gravity = Gravity.RIGHT|Gravity.CENTER_VERTICAL;
-        lp.setMargins(0, 0, 5, 0);
-        mActionBar.setCustomView(mSwitcherView, lp);
-		
-        FragmentTransaction transaction = getSupportFragmentTransaction();
-        TravelPanelFragement tpf = new TravelPanelFragement();
-        mSwitch.setOnCheckedChangeListener((OnCheckedChangeListener)tpf);
-		transaction.replace(R.id.screen_container, tpf, "travelPanel");
-		transaction.commit();
+
+        onFragmentChanged(R.layout.travel_diary, null);
 	}
 
 	@Override
@@ -108,68 +84,45 @@ public class TravelActivity extends BaseFragmentActivity implements OnSupportFra
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (MainPipeline.COUNT_KEY.equals(key)) {
+		if (MainPipeline.COUNT_KEY.equals(key)){
 		}
 	}
+	
 	@Override
 	public void onFragmentChanged(int layoutResId, Bundle args) {
-		FragmentTransaction transaction = getSupportFragmentTransaction();
-
 		Fragment fragment = null;
-		
-		if(layoutResId == R.layout.logger_history){
-			fragment = new LoggerHistoryFragment();
+		FragmentTransaction transaction = getSupportFragmentTransaction();
+		if(layoutResId == R.layout.travel_history){
+			fragment = new TravelHistoryFragment();
 		} else if(layoutResId == R.layout.travel_parking_panel){
-			fragment = new TravelParkingPanelFragement();
-		} 
-		
+			fragment = new TravelParkingPanelFragment();
+		} else if(layoutResId == R.layout.travel_diary){
+			fragment = new TravelPanelFragment();
+		}
 		if(fragment != null){
 			if(args != null){
 				fragment.setArguments(args);
 			}
-
-			if(fragment instanceof LoggerHistoryFragment){
-				transaction.replace(R.id.screen_container, fragment, "loggerHistory"); 
-				constructActionbar();
-			}else if (fragment instanceof TravelParkingPanelFragement){
-				transaction.replace(R.id.screen_container, fragment, "travelParkingPanel"); 
-				constructActionbar();
-			}
-			
+			transaction.replace(R.id.screen_container, fragment, fragment.getTag());
 			// Add to this transaction into BackStack
 			transaction.addToBackStack(fragment.getTag());
-			
 			transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			// Commit this transaction
 			transaction.commit();
 			return;
 		}
 	}
-	
-	private void constructActionbar(){
-		 mActionBar.setHomeButtonEnabled(true);
-		 mActionBar.setDisplayHomeAsUpEnabled(true);
-		 mSwitcherView.setVisibility(View.GONE);
-	}
-	
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if(keyCode == KeyEvent.KEYCODE_BACK){
-			if(getSupportFragmentManager().getBackStackEntryCount() == 0){
-				finish();
-				return true;
-			}
-		}
-		return super.onKeyDown(keyCode, event);
-	}
 
 	@Override
 	public void onBackStackChanged() {
 		final int backStackCount = getSupportFragmentManager().getBackStackEntryCount();
-		if(backStackCount == 0){
+		if(backStackCount == 1){
 			 mActionBar.setHomeButtonEnabled(false);
 			 mActionBar.setDisplayHomeAsUpEnabled(false);
-			 mSwitcherView.setVisibility(View.VISIBLE);	
+			 mActionBar.getCustomView().setVisibility(View.VISIBLE);
+		}else if(backStackCount == 0){
+			// no content shown, so quit
+			finish();
 		}
 	}
 	

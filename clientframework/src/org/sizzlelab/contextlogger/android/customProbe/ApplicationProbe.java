@@ -22,7 +22,7 @@
  * Authors:
  * Chaudhary Nalin (nalin.chaudhary@aalto.fi)
  */
-package org.sizzlelab.contextlogger.android.CustomProbe;
+package org.sizzlelab.contextlogger.android.customProbe;
 
 import java.util.Map;
 

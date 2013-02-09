@@ -1,3 +1,27 @@
+/**
+ * Copyright (c) 2013 Aalto University and the authors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining 
+ * a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included 
+ * in all copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *  
+ * Authors:
+ * Chao Wei (chao.wei@aalto.fi)
+ */
 package org.sizzlelab.contextlogger.android.travel;
 
 import java.util.ArrayList;
@@ -5,12 +29,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.AlertDialog;
-import org.holoeverywhere.app.Dialog;
-import org.holoeverywhere.app.Fragment;
+import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.widget.AdapterView;
 import org.holoeverywhere.widget.AdapterView.OnItemSelectedListener;
-import org.holoeverywhere.widget.EditText;
 import org.holoeverywhere.widget.Spinner;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,11 +39,9 @@ import org.sizzlelab.contextlogger.android.R;
 import org.sizzlelab.contextlogger.android.model.ActionEvent;
 import org.sizzlelab.contextlogger.android.model.EventState;
 import org.sizzlelab.contextlogger.android.model.handler.ActionEventHandler;
-import org.sizzlelab.contextlogger.android.travel.TravelParkingPanelFragement.ParkingCustomSubjectItemDialog.ParkingCustomSubjectItemListener;
-import org.sizzlelab.contextlogger.android.utils.Constants;
+import org.sizzlelab.contextlogger.android.travel.TravelCustomSubjectFragmentDialog.CustomSubject;
+import org.sizzlelab.contextlogger.android.travel.TravelCustomSubjectFragmentDialog.TravelCustomSubjectListener;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -32,10 +51,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import fi.aalto.chaow.android.app.BaseAlertDialog;
+
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.Menu;
+
 import fi.aalto.chaow.android.app.BaseAlertDialog.AlertDialogListener;
 
-public class TravelParkingPanelFragement extends Fragment implements OnClickListener, OnItemSelectedListener, Constants{
+public class TravelParkingPanelFragment extends AbstractTravelCommonFragment implements OnClickListener, OnItemSelectedListener{
 
 	private Handler mHandler = new Handler();
 	private Runnable mTimedTask = new Runnable(){
@@ -52,10 +74,6 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 			mHandler.postDelayed(mTimedTask , 500);				
 		}
 	};
-
-	private enum ParkingCustomSubject{
-		UNKONWN, MODE, PAYMENT, PRICE, PLACE
-	}
 	
 	private Spinner mSpinnerParkingPlace = null;
 	private Spinner mSpinnerPayment = null;
@@ -83,7 +101,7 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 	private String mNewPrice = null;
 	private String mNewPayment = null;
 	
-	public TravelParkingPanelFragement(){
+	public TravelParkingPanelFragment(){
 	}
 		
 	@Override
@@ -92,7 +110,22 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 		setHasOptionsMenu(true);
 		mApp = TravelApp.getInstance();
 	}
+
+	@Override
+	public void onPrepareOptionsMenu(Menu menu) {
+		// prevent the same menu pop up
+		menu.clear();
+	}
 	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		final ActionBar actionbar = activity.getSupportActionBar();
+		actionbar.setHomeButtonEnabled(true);
+		actionbar.setDisplayHomeAsUpEnabled(true);
+		actionbar.getCustomView().setVisibility(View.GONE);
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -192,17 +225,6 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 		if(!data.isNull("payment")){
 			fillSpinnerValue(data.getString("payment"), mSpinnerPayment);
 		}
-	}
-
-	private void fillSpinnerValue(final String value, final Spinner s){
-		if(TextUtils.isEmpty(value) || (s == null)) return;
-		for(int i = 0; i < s.getCount(); i++){
-			String item = s.getItemAtPosition(i).toString();
-			if((!TextUtils.isEmpty(item)) && value.equals(item)){
-				s.setSelection(i, false);
-				break;
-			}
-		}		
 	}
 	
 	private void refreshSpinners(){
@@ -353,25 +375,25 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 		final AdapterView<?> arg = parent;
 		if(parent != null){
 			boolean isShown = false;
-			ParkingCustomSubject pcs = ParkingCustomSubject.UNKONWN;
+			CustomSubject pcs = CustomSubject.UNKONWN;
 			final String itemName = parent.getItemAtPosition(pos).toString();
 			final int viewId = parent.getId();
 			if(viewId == R.id.spinner_travel_transport_mode_list){
 				if(pos == parent.getCount() - 1){
 					isShown = true;
-					pcs = ParkingCustomSubject.MODE;
+					pcs = CustomSubject.MODE;
 				}
 				mCurrentMode = itemName;
 			}else if(viewId == R.id.spinner_travel_parking_payment_list){
 				if(pos == parent.getCount() - 1){
 					isShown = true;
-					pcs = ParkingCustomSubject.PAYMENT;
+					pcs = CustomSubject.PAYMENT;
 				}
 				mPaymentMethod = itemName;
 			}else if(viewId == R.id.spinner_travel_parking_place_list){
 				if(pos == parent.getCount() - 1){
 					isShown = true;
-					pcs = ParkingCustomSubject.PLACE;
+					pcs = CustomSubject.PLACE;
 				}
 				mParkingPlace = itemName;
 			}else if(viewId == R.id.spinner_travel_transport_mode_person_list){
@@ -379,20 +401,20 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 			}else if(viewId == R.id.spinner_travel_parking_price_list){
 				if(pos == parent.getCount() - 1){
 					isShown = true;
-					pcs = ParkingCustomSubject.PRICE;
+					pcs = CustomSubject.PRICE;
 				}
 				mParkingPrice = itemName;
 			}
 			
 			if(isShown){
-				ParkingCustomSubjectItemDialog pcsid = new ParkingCustomSubjectItemDialog();
-				pcsid.config(new ParkingCustomSubjectItemListener (){
+				TravelCustomSubjectFragmentDialog tcsfg = new TravelCustomSubjectFragmentDialog();
+				tcsfg.config(new TravelCustomSubjectListener (){
 					@Override
-					public void OnTagNameInputCompleted(String itemName, ParkingCustomSubject subject) {
+					public void OnTagNameInputCompleted(String itemName, CustomSubject subject) {
 						handleParkingCustomeSubjectItem(itemName, subject);
 					}
 				}, pcs);
-				pcsid.setAlertDialogListener(new AlertDialogListener(){
+				tcsfg.setAlertDialogListener(new AlertDialogListener(){
 					@Override
 					public void onPositiveClick() { }
 					@Override
@@ -404,12 +426,12 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 						resetSpinner(arg);
 					}
 				});
-				pcsid.show(getFragmentManager());				
+				tcsfg.show(getFragmentManager());				
 			}
 		}
 	}
 
-	private void handleParkingCustomeSubjectItem(final String itemName, final ParkingCustomSubject subject){	
+	private void handleParkingCustomeSubjectItem(final String itemName, final CustomSubject subject){	
 		switch(subject){
 			case MODE:
 				mNewMode = itemName;
@@ -483,7 +505,6 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 		}
 	}
 	
-	
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
 	}
@@ -551,31 +572,6 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 		}
 	}
 	
-	
-	private void notifyEvent(final String payload, HashMap<String, String> msg){
-		if(!TextUtils.isEmpty(payload)){
-			Intent intent = new Intent();
-			intent.setAction(CUSTOM_INTENT_ACTION);
-			intent.putExtra("APPLICATION_ACTION", payload);
-			if((msg != null) && (!msg.isEmpty())){
-				String appData = null;
-				try {
-					appData = TravelApp.getFormattedJsonObject(msg, "message").toString();	
-				}catch(Exception e){
-				}
-				if(!TextUtils.isEmpty(appData)){
-					intent.putExtra("APPLICATION_DATA", appData); 
-					mApp.saveParkingInfo(appData);
-				}
-			}else{
-				mApp.saveParkingInfo(null);
-			}
-			sendEventBoradcast(intent);
-		} else {
-			mApp.showToastMessage(R.string.client_error);
-		}
-	}
-	
 	private void stopParkingEvent(){
 		toggleUIComponent(false);
 		ArrayList<ActionEvent> stopList = ActionEventHandler.getInstance().getAllItems(getSupportActivity().getApplicationContext(), false);
@@ -593,75 +589,6 @@ public class TravelParkingPanelFragement extends Fragment implements OnClickList
 		} 
 		// pop up this out of the stack
 		getSupportActivity().getSupportFragmentManager().popBackStack();
-	}
-	
-	private void sendEventBoradcast(final Intent intent){
-		mApp.sendLoggingEventBoradcast(intent);
-	}
-	
-	
-	public static class ParkingCustomSubjectItemDialog extends BaseAlertDialog {
-
-		private ParkingCustomSubjectItemListener mItemListener = null;
-		private ParkingCustomSubject mSubject = ParkingCustomSubject.UNKONWN;
-		
-		public void config(final ParkingCustomSubjectItemListener listener, ParkingCustomSubject subject){
-			mItemListener = listener;
-			mSubject = subject;
-		}
-		
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSupportActivity());
-	    	builder.setIcon(android.R.drawable.ic_dialog_info);
-			switch(mSubject){
-				case MODE:
-			    	builder.setTitle(R.string.travel_mode_dialog);
-					break;
-				case PAYMENT:
-			    	builder.setTitle(R.string.travel_payment_dialog);
-					break;
-				case PLACE:
-			    	builder.setTitle(R.string.travel_place_dialog);
-					break;
-				case PRICE:
-			    	builder.setTitle(R.string.travel_price_dialog);					
-					break;					
-				default:
-					return null;
-			}
-	    	LayoutInflater inflater = LayoutInflater.from(getSupportActivity());
-	    	final View noteView = inflater.inflate(R.layout.custom_item_dialog, null);
-	    	final EditText travelItemContent = (EditText)noteView.findViewById(R.id.edit_text_travel_item);
-	    	builder.setView(noteView);
-	    	
-	    	builder.setPositiveButton(R.string.travel_save, 
-	    			new DialogInterface.OnClickListener() {					
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							final String itemName = travelItemContent.getEditableText().toString();
-							if(!TextUtils.isEmpty(itemName)){
-								if(mItemListener != null){
-									mItemListener.OnTagNameInputCompleted(itemName, mSubject);
-								}
-							}else{
-								TravelApp.getInstance().showToastMessage(R.string.travel_custome_item_input_error);
-							}
-						}
-					});
-	    	builder.setNegativeButton(R.string.cancel,     			
-	    			new DialogInterface.OnClickListener() {					
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							getDialogListener().onNegativeClick();
-						}
-					});	    	
-			return builder.create();
-		}
-		
-		public static interface ParkingCustomSubjectItemListener{
-			void OnTagNameInputCompleted(final String itemName, final ParkingCustomSubject subject);
-		}
 	}
 	
 }

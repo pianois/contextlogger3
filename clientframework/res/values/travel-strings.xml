@@ -204,7 +204,6 @@
 	<string name="travel_place_dialog">Place</string>
 	<string name="travel_payment_dialog">Payment</string>
 			
-    <string name="view_history">View history</string>
     <string name="travel_cheating">Cheating mode</string>
     <string name="travel_custom_item_hint">pleae specify the item</string> 
 
